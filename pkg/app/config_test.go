@@ -10,4 +10,5 @@ func Test_Init(t *testing.T) {
 	t.Log(Name)
 	t.Log(Ffmpeg)
 	t.Log(Ffprobe)
+	t.Log(Datasource)
 }

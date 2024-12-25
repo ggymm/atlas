@@ -3,4 +3,5 @@
 dist
 temp
 
-web/node_modules
+
+app.db

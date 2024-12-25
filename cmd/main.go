@@ -7,10 +7,12 @@ import (
 	"time"
 
 	"atlas/pkg/app"
+	"atlas/pkg/store"
 )
 
 func init() {
 	app.Init()
+	store.Init()
 }
 
 func main() {

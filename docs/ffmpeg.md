@@ -25,6 +25,8 @@ git clone https://code.videolan.org/videolan/x264.git
 
 进入到 msys2 目录并执行 msys2_shell.cmd -use-full-path
 
+**C:\Users\19679\sdk\msys2\msys2_shell.cmd -use-full-path**
+
 检查环境
 
 ```bash

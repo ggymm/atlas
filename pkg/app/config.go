@@ -15,6 +15,10 @@ var (
 	Ffprobe string
 )
 
+var (
+	Datasource string
+)
+
 type Config struct {
 	// App 应用配置
 	App struct {
@@ -37,6 +41,10 @@ type Config struct {
 	Server struct {
 		Addr int `ini:"addr"`
 	} `ini:"server"`
+
+	Database struct {
+		Source string `ini:"source"`
+	} `ini:"database"`
 }
 
 func Init() {
@@ -53,6 +61,9 @@ func Init() {
 
 	Name = cfg.App.Name
 
-	Ffmpeg = filepath.Join(root, cfg.Bin.Root, cfg.Bin.Ffmpeg)
-	Ffprobe = filepath.Join(root, cfg.Bin.Root, cfg.Bin.Ffprobe)
+	base := filepath.Join(root, cfg.Bin.Root)
+	Ffmpeg = filepath.Join(base, cfg.Bin.Ffmpeg)
+	Ffprobe = filepath.Join(base, cfg.Bin.Ffprobe)
+
+	Datasource = "file:" + cfg.Database.Source
 }
