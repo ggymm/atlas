@@ -16,6 +16,7 @@ git clone https://git.ffmpeg.org/ffmpeg.git
 
 cd ffmpeg
 git clone https://code.videolan.org/videolan/x264.git
+git clone https://chromium.googlesource.com/webm/libwebp
 
 ```
 
@@ -25,7 +26,11 @@ git clone https://code.videolan.org/videolan/x264.git
 
 进入到 msys2 目录并执行 msys2_shell.cmd -use-full-path
 
-**C:\Users\19679\sdk\msys2\msys2_shell.cmd -use-full-path**
+```bash
+
+C:\Users\19679\sdk\msys2\msys2_shell.cmd -use-full-path
+
+```
 
 检查环境
 
@@ -48,6 +53,7 @@ pacman -S yasm
 pacman -S nasm
 pacman -S pkg-config
 pacman -S git
+pacman -S autoconf automake libtool
 
 ```
 
@@ -75,6 +81,27 @@ pkg-config --cflags --libs x264
 
 ```
 
+#### 安装 webp
+
+```bash
+
+# 配置代理
+set http_proxy=http://127.0.0.1:9910
+set https_proxy=http://127.0.0.1:9910
+
+# 源码安装 vcpkg
+git clone https://github.com/microsoft/vcpkg
+cd vcpkg
+.\bootstrap-vcpkg.bat
+
+# 安装 libwebp
+.\vcpkg integrate install
+.\vcpkg install libwebp:x64-windows-static
+
+# 复制到 packages/libwebp_x64-windows-static 目录下所有文件到 /usr/local 目录下 
+
+```
+
 #### 编译 ffmpeg
 
 ```bash
@@ -90,10 +117,11 @@ CC="cl" ./configure \
     --enable-swscale \
     --enable-nonfree \
     --enable-libx264 \
+    --enable-libwebp \
     --enable-gpl \
     --enable-small \
     --disable-everything \
-    --enable-encoder=mjpeg \
+    --enable-encoder=mjpeg,libwebp \
     --enable-decoder=h264,mpeg4,mpegvideo,mjpeg \
     --enable-muxer=image2,image2pipe \
     --enable-demuxer=mov,avi \
