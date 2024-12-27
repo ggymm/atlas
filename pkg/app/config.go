@@ -11,6 +11,10 @@ var (
 )
 
 var (
+	LogPath string
+)
+
+var (
 	Ffmpeg  string
 	Ffprobe string
 )
@@ -18,6 +22,10 @@ var (
 var (
 	Datasource string
 )
+
+func Log() string {
+	return filepath.Join(LogPath, Name+".log")
+}
 
 type Config struct {
 	// App 应用配置
@@ -47,7 +55,7 @@ type Config struct {
 	} `ini:"database"`
 }
 
-func Init() {
+func InitConfig() {
 	var (
 		cfg  = new(Config)
 		root = rootPath()
@@ -60,6 +68,8 @@ func Init() {
 	}
 
 	Name = cfg.App.Name
+
+	LogPath = cfg.Log.Path
 
 	base := filepath.Join(root, cfg.Bin.Root)
 	Ffmpeg = filepath.Join(base, cfg.Bin.Ffmpeg)

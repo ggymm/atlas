@@ -1,44 +1,48 @@
 package main
 
 import (
-	"io/fs"
-	"path/filepath"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"atlas/pkg/app"
-	"atlas/pkg/store"
-	"atlas/pkg/video"
+	"atlas/pkg/data"
+	"atlas/pkg/log"
 )
 
 func init() {
 	app.Init()
-	store.Init()
+	log.Init()
+	data.Init()
 }
 
 func main() {
-	store.Flush()
+	state := 1
+	sc := make(chan os.Signal, 1)
+	signal.Notify(sc, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
-	root := "C:/Users/19679/Videos/TG/202410"
-	err := filepath.WalkDir(root, func(p string, d fs.DirEntry, err error) error {
-		if d.IsDir() {
-			return nil
-		}
+	// 初始化
 
-		bs, err := video.Thumbnail(p)
-		if err != nil {
-			return nil
-		}
+	// 启动服务
+	go func() {
 
-		v := new(store.Video)
-		v.Name = d.Name()
-		v.RelPath = p
-		v.Thumbnail = bs
-		err = store.DB.Create(v).Error
-		if err != nil {
-			return nil
+	}()
+
+EXIT:
+	for {
+		sig := <-sc
+
+		// 信号处理
+		switch sig {
+		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
+			state = 0
+			break EXIT
+		case syscall.SIGHUP:
+		default:
+			break EXIT
 		}
-		return nil
-	})
-	if err != nil {
-		panic(err)
 	}
+	time.Sleep(time.Second)
+	os.Exit(state)
 }

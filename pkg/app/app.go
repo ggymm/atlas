@@ -31,3 +31,7 @@ func rootPath() string {
 		return absPath
 	}
 }
+
+func Init() {
+	InitConfig()
+}

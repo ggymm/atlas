@@ -1,4 +1,4 @@
-package store
+package data
 
 import (
 	_ "embed"
@@ -10,9 +10,7 @@ import (
 	"atlas/pkg/app"
 )
 
-var (
-	DB *gorm.DB
-)
+var DB *gorm.DB
 
 //go:embed init.sql
 var initSQL string
