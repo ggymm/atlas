@@ -42,3 +42,7 @@ func Debug() *zerolog.Event {
 func Error() *zerolog.Event {
 	return log.Error().Stack()
 }
+
+func Fatal() *zerolog.Event {
+	return log.Fatal().Stack()
+}
