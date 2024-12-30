@@ -7,6 +7,7 @@ type Info struct {
 		NbPrograms     int    `json:"nb_programs"`
 		NbStreamGroups int    `json:"nb_stream_groups"`
 		FormatName     string `json:"format_name"`
+		FormatLongName string `json:"format_long_name"`
 		StartTime      string `json:"start_time"`
 		Duration       string `json:"duration"`
 		Size           string `json:"size"`

@@ -75,5 +75,5 @@ func InitConfig() {
 	Ffmpeg = filepath.Join(base, cfg.Bin.Ffmpeg)
 	Ffprobe = filepath.Join(base, cfg.Bin.Ffprobe)
 
-	Datasource = "file:" + cfg.Database.Source
+	Datasource = "file:" + filepath.Join(root, cfg.Database.Source)
 }

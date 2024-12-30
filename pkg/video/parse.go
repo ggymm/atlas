@@ -20,7 +20,7 @@ func Parse(path string) (*Info, error) {
 
 	// 解析 JSON
 	i := new(Info)
-	err = json.Unmarshal(out, i)
+	err = json.Unmarshal(out, &i)
 	if err != nil {
 		return nil, err
 	}
