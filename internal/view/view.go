@@ -9,6 +9,7 @@ import (
 	"image/color"
 
 	"gioui.org/app"
+	"gioui.org/font"
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/clip"
@@ -38,6 +39,7 @@ type UI struct {
 	height  unit.Dp
 	spacing unit.Dp
 
+	loading     bool
 	records     []*Video
 	recordsGrid component.GridState
 
@@ -94,9 +96,11 @@ func (ui *UI) Run(w *app.Window) error {
 			}
 			if ui.searchPrevBtn.Clicked(ctx) && ui.page > 1 {
 				ui.page--
+				go ui.Load()
 			}
 			if ui.searchNextBtn.Clicked(ctx) && ui.page < ui.pageNum {
 				ui.page++
+				go ui.Load()
 			}
 			ui.Layout(ctx)
 			e.Frame(ctx.Ops)
@@ -107,6 +111,7 @@ func (ui *UI) Run(w *app.Window) error {
 }
 
 func (ui *UI) Load() {
+	ui.loading = true
 	size := 20
 	data, err := service.FetchVideos(&service.VideoPageReq{
 		Page: service.Page{
@@ -114,6 +119,7 @@ func (ui *UI) Load() {
 			Size: size, // 每页显示数量
 		},
 	})
+	ui.loading = false
 	if err != nil {
 		fmt.Println("FetchVideos error:", err)
 		return
@@ -137,9 +143,12 @@ func (ui *UI) Load() {
 
 		webpImg, _, _ := image.Decode(bytes.NewReader(r.Cover))
 		if webpImg != nil {
-			v.CoverImage = webpImg
-			v.CoverImageOp = paint.NewImageOp(webpImg)
+			v.coverImage = webpImg
+			v.coverImageOp = paint.NewImageOp(webpImg)
 		}
+
+		v.nameTip = component.DesktopTooltip(ui.theme, v.Name)
+		v.nameTipArea = &component.TipArea{}
 		videos[i] = v
 	}
 
@@ -148,6 +157,7 @@ func (ui *UI) Load() {
 
 	ui.pageNum = (ui.total + size - 1) / size // 计算总页数
 
+	// 刷新界面
 	if ui.win != nil {
 		ui.win.Invalidate()
 	}
@@ -192,6 +202,13 @@ func (ui *UI) Layout(ctx layout.Context) layout.Dimensions {
 			// 搜索结果组件
 			layout.Rigid(layout.Spacer{Height: dp24}.Layout),
 			layout.Flexed(1, func(ctx layout.Context) layout.Dimensions {
+				if ui.loading {
+					// 显示加载动画
+					return layout.Center.Layout(ctx, func(ctx layout.Context) layout.Dimensions {
+						return material.Loader(ui.theme).Layout(ctx)
+					})
+				}
+
 				width := ctx.Constraints.Max.X
 				withDp := ctx.Dp(ui.width)
 				spaceDp := ctx.Dp(ui.spacing)
@@ -295,42 +312,58 @@ func (ui *UI) createGridItems(row, columns, spacing int) []layout.FlexChild {
 			if col != 0 {
 				inset.Left = unit.Dp(float32(spacing))
 			}
-			return inset.Layout(ctx, func(ctx layout.Context) layout.Dimensions {
-				return layout.Stack{Alignment: layout.N}.Layout(ctx,
-					layout.Stacked(func(ctx layout.Context) layout.Dimensions {
-						return layout.Flex{Axis: layout.Vertical}.Layout(ctx,
-							// 图片区域
-							layout.Rigid(func(ctx layout.Context) layout.Dimensions {
-								width := ctx.Dp(ui.width)
-								height := ctx.Dp(ui.height - dp40)
-								if video.CoverImage != nil {
-									video.CoverImageOp.Add(ctx.Ops)
-									paint.PaintOp{}.Add(ctx.Ops)
-								} else {
-									rect := clip.Rect{Max: image.Point{X: width, Y: height}}.Op()
-									paint.FillShape(ctx.Ops, color.NRGBA{R: 200, G: 200, B: 200, A: 255}, rect)
-								}
-								return layout.Dimensions{Size: image.Point{X: width, Y: height}}
-							}),
+			// 处理点击事件
+			if video.clickable.Clicked(ctx) {
+				fmt.Printf("Opening video: %s\n", video.Path)
+			}
+			return video.clickable.Layout(ctx, func(ctx layout.Context) layout.Dimensions {
+				return inset.Layout(ctx, func(ctx layout.Context) layout.Dimensions {
+					return layout.Stack{Alignment: layout.N}.Layout(ctx,
+						layout.Stacked(func(ctx layout.Context) layout.Dimensions {
+							return layout.Flex{Axis: layout.Vertical}.Layout(ctx,
+								// 图片区域
+								layout.Rigid(func(ctx layout.Context) layout.Dimensions {
+									width := ctx.Dp(ui.width)
+									height := ctx.Dp(ui.height - dp40)
+									if video.coverImage != nil {
+										video.coverImageOp.Add(ctx.Ops)
+										paint.PaintOp{}.Add(ctx.Ops)
+									} else {
+										rect := clip.Rect{Max: image.Point{X: width, Y: height}}.Op()
+										paint.FillShape(ctx.Ops, color.NRGBA{R: 200, G: 200, B: 200, A: 255}, rect)
+									}
+									return layout.Dimensions{Size: image.Point{X: width, Y: height}}
+								}),
 
-							// 文字区域
-							layout.Rigid(func(ctx layout.Context) layout.Dimensions {
-								return layout.UniformInset(dp8).Layout(ctx,
-									func(ctx layout.Context) layout.Dimensions {
-										// 设置容器约束为完整的图片宽度
-										ctx.Constraints.Min.X = ctx.Dp(ui.width - dp16)
-										ctx.Constraints.Max.X = ctx.Dp(ui.width - dp16)
+								// 文字区域
+								layout.Rigid(func(ctx layout.Context) layout.Dimensions {
+									return layout.UniformInset(dp8).Layout(ctx,
+										func(ctx layout.Context) layout.Dimensions {
+											ctx.Constraints.Min.X = ctx.Dp(ui.width - dp16)
+											ctx.Constraints.Max.X = ctx.Dp(ui.width - dp16)
+											// ctx.Constraints.Min.Y = ctx.Dp(20)
+											ctx.Constraints.Max.Y = ctx.Dp(ui.height - dp40)
 
-										label := material.Label(ui.theme, unit.Sp(14), video.Name)
-										label.MaxLines = 1
-										label.Alignment = text.Middle
-										return label.Layout(ctx)
-									},
-								)
-							}),
-						)
-					}),
-				)
+											// tooltip
+											tip := video.nameTip
+											area := video.nameTipArea
+											return area.Layout(ctx, tip, func(ctx layout.Context) layout.Dimensions {
+												ctx.Constraints.Min.X = ctx.Dp(ui.width - dp16)
+												ctx.Constraints.Max.X = ctx.Dp(ui.width - dp16)
+
+												label := material.Label(ui.theme, sp12, video.Name)
+												label.MaxLines = 1
+												label.Alignment = text.Middle
+												label.Font.Weight = font.Bold
+												return label.Layout(ctx)
+											})
+										},
+									)
+								}),
+							)
+						}),
+					)
+				})
 			})
 		})
 	}
