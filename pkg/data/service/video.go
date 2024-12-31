@@ -1,13 +1,20 @@
 package service
 
 import (
-	"atlas/internal/req"
-	"atlas/internal/resp"
 	"atlas/pkg/data"
 	"atlas/pkg/data/model"
 )
 
-func FetchVideos(req *req.VideoPageReq) (*resp.VideoPageResp, error) {
+type VideoPageReq struct {
+	Page
+}
+
+type VideoPageResp struct {
+	Total   int64          `json:"total"`
+	Records []*model.Video `json:"records"`
+}
+
+func FetchVideos(req *VideoPageReq) (*VideoPageResp, error) {
 	var (
 		total   int64
 		records []*model.Video
@@ -25,5 +32,5 @@ func FetchVideos(req *req.VideoPageReq) (*resp.VideoPageResp, error) {
 		return nil, err
 	}
 
-	return &resp.VideoPageResp{Total: total, Records: records}, nil
+	return &VideoPageResp{Total: total, Records: records}, nil
 }

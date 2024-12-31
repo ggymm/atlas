@@ -11,9 +11,9 @@ CREATE TABLE IF NOT EXISTS "video"
     "tags"       TEXT,
     "path"       TEXT,
     "size"       INTEGER,
+    "cover"      BLOB,
     "format"     TEXT,
     "duration"   INTEGER,
-    "thumbnail"  BLOB,
     "created_at" INTEGER,
     "updated_at" INTEGER,
     PRIMARY KEY ("id")

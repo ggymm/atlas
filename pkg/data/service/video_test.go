@@ -3,18 +3,10 @@ package service_test
 import (
 	"testing"
 
-	"atlas/internal/req"
-	"atlas/internal/service"
 	"atlas/pkg/app"
 	"atlas/pkg/data"
+	"atlas/pkg/data/service"
 	"atlas/pkg/log"
-)
-
-var (
-	page = req.BasePage{
-		Page: 1,
-		Size: 10,
-	}
 )
 
 func init() {
@@ -24,11 +16,14 @@ func init() {
 }
 
 func Test_FetchVideos(t *testing.T) {
-	r, err := service.FetchVideos(&req.VideoPageReq{
-		BasePage: page,
+	r, err := service.FetchVideos(&service.VideoPageReq{
+		Page: service.Page{
+			Page: 1,
+			Size: 20, // 每页显示数量
+		},
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(r)
+	t.Logf("resp: %+v", r)
 }

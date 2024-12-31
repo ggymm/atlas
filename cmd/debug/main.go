@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/ggymm/gopkg/conv"
 	"io/fs"
 	"path/filepath"
+
+	"github.com/ggymm/gopkg/conv"
 
 	"atlas/pkg/app"
 	"atlas/pkg/data"
@@ -47,7 +48,7 @@ func main() {
 		v.Size = fi.Size()
 		v.Format = vi.Format.FormatLongName
 		v.Duration = conv.ParseInt64(vi.Format.Duration)
-		v.Thumbnail = bs
+		v.Cover = bs
 		err = v.Create()
 		if err != nil {
 			return nil

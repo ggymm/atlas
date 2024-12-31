@@ -30,7 +30,7 @@ func Parse(path string) (*Info, error) {
 func Thumbnail(path string) ([]byte, error) {
 	buf := new(bytes.Buffer)
 	cmd := exec.Command(app.Ffmpeg, "-hide_banner", "-v", "error",
-		"-i", path, "-vf", "scale=480:480:force_original_aspect_ratio=decrease",
+		"-i", path, "-vf", "scale=320:180:force_original_aspect_ratio=decrease",
 		"-c:v", "webp", "-preset", "picture", "-q:v", "80", "-frames:v", "1", "-f", "image2pipe", "-",
 	)
 
