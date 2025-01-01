@@ -1,13 +1,9 @@
 package view
 
 import (
-	_ "golang.org/x/image/webp"
-
+	"atlas/pkg/data/service"
 	"bytes"
 	"fmt"
-	"image"
-	"image/color"
-
 	"gioui.org/app"
 	"gioui.org/font"
 	"gioui.org/layout"
@@ -19,8 +15,9 @@ import (
 	"gioui.org/widget"
 	"gioui.org/widget/material"
 	"gioui.org/x/component"
-
-	"atlas/pkg/data/service"
+	_ "golang.org/x/image/webp"
+	"image"
+	"image/color"
 )
 
 type UI struct {
@@ -35,9 +32,9 @@ type UI struct {
 	total   int
 	pageNum int
 
-	width   unit.Dp
-	height  unit.Dp
-	spacing unit.Dp
+	space  unit.Dp
+	width  unit.Dp
+	height unit.Dp
 
 	loading     bool
 	records     []*Video
@@ -60,9 +57,9 @@ func NewUI() *UI {
 
 	ui.page = 1
 
+	ui.space = unit.Dp(20)
 	ui.width = unit.Dp(320)  // 1920 * 1080 => 320 * 180
 	ui.height = unit.Dp(220) // 180 + 40
-	ui.spacing = unit.Dp(20)
 
 	ui.layer = component.NewModal()
 
@@ -82,6 +79,7 @@ func NewUI() *UI {
 func (ui *UI) Run(w *app.Window) error {
 	ui.win = w
 	ops := new(op.Ops)
+
 	for {
 		switch e := w.Event().(type) {
 		case app.FrameEvent:
@@ -96,10 +94,12 @@ func (ui *UI) Run(w *app.Window) error {
 			}
 			if ui.searchPrevBtn.Clicked(ctx) && ui.page > 1 {
 				ui.page--
+				ui.recordsGrid = component.GridState{}
 				go ui.Load()
 			}
 			if ui.searchNextBtn.Clicked(ctx) && ui.page < ui.pageNum {
 				ui.page++
+				ui.recordsGrid = component.GridState{}
 				go ui.Load()
 			}
 			ui.Layout(ctx)
@@ -112,7 +112,7 @@ func (ui *UI) Run(w *app.Window) error {
 
 func (ui *UI) Load() {
 	ui.loading = true
-	size := 20
+	size := 60
 	data, err := service.FetchVideos(&service.VideoPageReq{
 		Page: service.Page{
 			Page: ui.page,
@@ -210,11 +210,11 @@ func (ui *UI) Layout(ctx layout.Context) layout.Dimensions {
 				}
 
 				width := ctx.Constraints.Max.X
-				withDp := ctx.Dp(ui.width)
-				spaceDp := ctx.Dp(ui.spacing)
+				spaceDp := ctx.Dp(ui.space)
+				widthDp := ctx.Dp(ui.width)
 
-				columns := max(1, (width+spaceDp)/(withDp+spaceDp))         // 计算列数
-				spacing := max(spaceDp, (width-columns*withDp)/(columns+1)) // 计算间距
+				columns := max(1, (width+spaceDp)/(widthDp+spaceDp))         // 计算列数
+				spacing := max(spaceDp, (width-columns*widthDp)/(columns+1)) // 计算间距
 
 				rows := (len(ui.records) + columns - 1) / columns // 向上取整计算行数
 
@@ -260,8 +260,7 @@ func (ui *UI) Layout(ctx layout.Context) layout.Dimensions {
 								Left:  dp24,
 								Right: dp24,
 							}.Layout(ctx, func(ctx layout.Context) layout.Dimensions {
-								label := material.Label(ui.theme, unit.Sp(16),
-									fmt.Sprintf("%d / %d", ui.page, ui.pageNum))
+								label := material.Label(ui.theme, sp14, fmt.Sprintf("%d / %d", ui.page, ui.pageNum))
 								return label.Layout(ctx)
 							})
 						}),
@@ -281,7 +280,7 @@ func (ui *UI) Layout(ctx layout.Context) layout.Dimensions {
 	})
 
 	ui.layer.Layout(ctx, ui.theme)
-	return layout.Dimensions{Size: ctx.Constraints.Max}
+	return layout.Dimensions{}
 }
 
 func (ui *UI) createGridItems(row, columns, spacing int) []layout.FlexChild {
