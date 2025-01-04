@@ -56,6 +56,21 @@ pacman -S autoconf automake libtool
 
 ```
 
+#### vcpkg
+
+```bash
+
+# 配置代理
+set http_proxy=http://127.0.0.1:9910
+set https_proxy=http://127.0.0.1:9910
+
+# 源码安装 vcpkg
+git clone https://github.com/microsoft/vcpkg
+cd vcpkg
+.\bootstrap-vcpkg.bat
+
+```
+
 #### 编译 x264
 
 ```bash
@@ -80,20 +95,21 @@ pkg-config --cflags --libs x264
 
 ```
 
+#### 安装 sdl2
+
+```bash
+
+.\vcpkg integrate install
+.\vcpkg install sdl2:x64-windows-static
+
+# 复制到 packages/sdl2_x64-windows-static 目录下所有文件到 /usr/local 目录下 
+
+```
+
 #### 安装 webp
 
 ```bash
 
-# 配置代理
-set http_proxy=http://127.0.0.1:9910
-set https_proxy=http://127.0.0.1:9910
-
-# 源码安装 vcpkg
-git clone https://github.com/microsoft/vcpkg
-cd vcpkg
-.\bootstrap-vcpkg.bat
-
-# 安装 libwebp
 .\vcpkg integrate install
 .\vcpkg install libwebp:x64-windows-static
 
@@ -117,6 +133,8 @@ CC="cl" ./configure \
     --enable-nonfree \
     --enable-avutil \
     --enable-avformat \
+    --enable-sdl \
+    --enable-ffplay \
     --enable-libx264 \
     --enable-libwebp \
     --enable-gpl \

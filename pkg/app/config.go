@@ -8,6 +8,7 @@ import (
 
 var (
 	Name string
+	Root string
 )
 
 var (
@@ -31,6 +32,7 @@ type Config struct {
 	// App 应用配置
 	App struct {
 		Name string `ini:"name"`
+		Root string `ini:"root"`
 	} `ini:"app"`
 
 	// Log 日志配置
@@ -68,6 +70,7 @@ func InitConfig() {
 	}
 
 	Name = cfg.App.Name
+	Root = cfg.App.Root
 
 	LogPath = cfg.Log.Path
 

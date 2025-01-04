@@ -4,6 +4,14 @@ const (
 	timeFormat = "2006-01-02 15:04:05"
 )
 
+type Get struct {
+	Id int64 `json:"id" validate:"required"`
+}
+
+type Delete struct {
+	Id int64 `json:"id" validate:"required"`
+}
+
 type Page struct {
 	Page int `query:"page"`
 	Size int `query:"size"`
@@ -27,20 +35,6 @@ func (p *Page) GetOffset() int {
 	return (p.GetPage() - 1) * p.GetSize()
 }
 
-type BaseGet struct {
-	Id int64 `json:"id" validate:"required"`
-}
-
-type BaseDelete struct {
-	Id int64 `json:"id" validate:"required"`
-}
-
-type TreeNode[T any] struct {
-	Key      int64  `json:"key"`
-	Label    string `json:"label"`
-	Children []*T   `json:"children"`
-}
-
 type Option struct {
 	Value int64  `json:"value"`
 	Label string `json:"label"`
@@ -49,4 +43,10 @@ type Option struct {
 type PageList struct {
 	List  any   `json:"list"`
 	Total int64 `json:"total"`
+}
+
+type TreeNode[T any] struct {
+	Key      int64  `json:"key"`
+	Label    string `json:"label"`
+	Children []*T   `json:"children"`
 }

@@ -1,14 +1,11 @@
 package view
 
 import (
-	"image"
 	"os"
 
 	"gioui.org/app"
-	"gioui.org/op/paint"
 	"gioui.org/unit"
 	"gioui.org/widget"
-	"gioui.org/x/component"
 )
 
 var (
@@ -34,11 +31,10 @@ type Video struct {
 	CreatedAt int64
 	UpdatedAt int64
 
-	nameTip      component.Tooltip
-	nameTipArea  *component.TipArea
-	coverImage   image.Image
-	coverImageOp paint.ImageOp
-	clickable    widget.Clickable
+	nameLayout  LabelLayout
+	coverLayout ImageLayout
+
+	videoClickable widget.Clickable
 }
 
 func Show() {

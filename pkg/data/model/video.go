@@ -1,10 +1,5 @@
 package model
 
-import (
-	"atlas/pkg/data"
-	"atlas/pkg/uuid"
-)
-
 type Video struct {
 	Id        string `gorm:"column:id;type:text;not null;comment:ID"`
 	Name      string `gorm:"column:name;type:text;comment:名称"`
@@ -16,13 +11,4 @@ type Video struct {
 	Duration  int64  `gorm:"column:duration;type:integer;comment:时长"`
 	CreatedAt int64  `gorm:"column:created_at;type:integer;autoCreateTime:milli;comment:创建时间"`
 	UpdatedAt int64  `gorm:"column:updated_at;type:integer;autoCreateTime:milli;comment:更新时间"`
-}
-
-func (v *Video) Create() error {
-	v.Id = uuid.New()
-	return data.DB.Create(v).Error
-}
-
-func (v *Video) Update() error {
-	return data.DB.Save(v).Error
 }

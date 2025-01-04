@@ -15,8 +15,13 @@ func init() {
 	data.Init()
 }
 
-func Test_FetchVideos(t *testing.T) {
-	r, err := service.FetchVideos(&service.VideoPageReq{
+func Test_CheckVideo(t *testing.T) {
+	ok := service.CheckVideo("hash")
+	t.Logf("ok: %v", ok)
+}
+
+func Test_SelectVideos(t *testing.T) {
+	r, err := service.SelectVideos(&service.VideoPageReq{
 		Page: service.Page{
 			Page: 1,
 			Size: 20, // 每页显示数量

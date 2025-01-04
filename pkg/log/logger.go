@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/ggymm/gopkg/rolling"
+	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/pkgerrors"
 
@@ -39,10 +40,10 @@ func Debug() *zerolog.Event {
 	return log.Debug()
 }
 
-func Error() *zerolog.Event {
-	return log.Error().Stack()
+func Error(err error) *zerolog.Event {
+	return log.Error().Stack().Err(errors.WithStack(err))
 }
 
-func Fatal() *zerolog.Event {
-	return log.Fatal().Stack()
+func Fatal(err error) *zerolog.Event {
+	return log.Fatal().Stack().Err(errors.WithStack(err))
 }
