@@ -1,9 +1,7 @@
-package task_test
+package main
 
 import (
-	"testing"
-
-	"atlas/internal/task"
+	"atlas/internal/view"
 	"atlas/pkg/app"
 	"atlas/pkg/data"
 	"atlas/pkg/log"
@@ -15,6 +13,6 @@ func init() {
 	data.Init()
 }
 
-func Test_Start(t *testing.T) {
-	task.Start()
+func main() {
+	view.Show()
 }

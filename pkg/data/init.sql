@@ -2,9 +2,10 @@ CREATE TABLE IF NOT EXISTS "video"
 (
     "id"         TEXT NOT NULL,
     "name"       TEXT,
-    "tags"       TEXT,
     "path"       TEXT,
     "size"       INTEGER,
+    "star"       INTEGER,
+    "tags"       TEXT,
     "cover"      BLOB,
     "format"     TEXT,
     "duration"   INTEGER,

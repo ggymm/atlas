@@ -14,9 +14,8 @@ type VideoPageResp struct {
 	Records []*model.Video `json:"records"`
 }
 
-func CheckVideo(id string) bool {
-	var v model.Video
-	err := data.DB.Where("id = ?", id).Limit(1).Find(&v).Error
+func CheckVideo(v *model.Video) bool {
+	err := data.DB.First(&v).Error
 	return err == nil && len(v.Id) > 0
 }
 
@@ -44,11 +43,18 @@ func SelectVideos(req *VideoPageReq) (*VideoPageResp, error) {
 		return nil, err
 	}
 
-	// 查询列表
-	err = data.DB.Limit(req.GetSize()).Offset(req.GetOffset()).Find(&records).Error
-	if err != nil {
-		return nil, err
+	if req == nil {
+		// 查询列表
+		err = data.DB.Find(&records).Error
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		// 查询列表
+		err = data.DB.Limit(req.GetSize()).Offset(req.GetOffset()).Find(&records).Error
+		if err != nil {
+			return nil, err
+		}
 	}
-
 	return &VideoPageResp{Total: total, Records: records}, nil
 }

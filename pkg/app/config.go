@@ -8,6 +8,7 @@ import (
 
 var (
 	Name string
+	Addr string
 	Root string
 )
 
@@ -32,6 +33,7 @@ type Config struct {
 	// App 应用配置
 	App struct {
 		Name string `ini:"name"`
+		Addr string `ini:"addr"`
 		Root string `ini:"root"`
 	} `ini:"app"`
 
@@ -47,11 +49,7 @@ type Config struct {
 		Ffprobe string `ini:"ffprobe"`
 	} `ini:"bin"`
 
-	// Server 服务器配置
-	Server struct {
-		Addr int `ini:"addr"`
-	} `ini:"server"`
-
+	// Database 数据库配置
 	Database struct {
 		Source string `ini:"source"`
 	} `ini:"database"`
@@ -70,6 +68,7 @@ func InitConfig() {
 	}
 
 	Name = cfg.App.Name
+	Addr = cfg.App.Addr
 	Root = cfg.App.Root
 
 	LogPath = cfg.Log.Path
