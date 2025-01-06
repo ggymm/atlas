@@ -1,93 +1,46 @@
 package task
 
 import (
-	"atlas/pkg/data"
-	"atlas/pkg/data/model"
-	"atlas/pkg/data/service"
-	"atlas/pkg/log"
-	"atlas/pkg/video"
-	"github.com/ggymm/gopkg/conv"
-	"github.com/ggymm/gopkg/xxhash"
-	"io"
-	"io/fs"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
+
+	"github.com/ggymm/gopkg/conv"
+	"github.com/ggymm/gopkg/uuid"
+
+	"atlas/pkg/data/model"
+	"atlas/pkg/data/service"
+	"atlas/pkg/log"
+	"atlas/pkg/video"
 )
 
 const (
 	tag = "scanner"
 )
 
-func (s *Scanner) run() error {
-	data.Flush()
-
-	// 扫描目录
-	err := filepath.Walk(s.root, func(path string, info fs.FileInfo, err error) error {
-		if err != nil || info.IsDir() {
-			return nil
-		}
-
-		v := new(model.Video)
-		err = s.check(v, path)
-		if err != nil {
-			log.Error(err).
-				Str("file", path).
-				Msgf("%s check video error", tag)
-			return nil
-		}
-		v.Name = info.Name()
-		v.Size = info.Size()
-
-		// 判断是否存在
-		if service.CheckVideo(v) {
-			err = s.update(v, path)
+func (s *Scanner) walk(p string) error {
+	fs, err := os.ReadDir(p)
+	if err != nil {
+		return err
+	}
+	for _, f := range fs {
+		name := f.Name()
+		path := filepath.Join(p, name)
+		if f.IsDir() {
+			err = s.walk(path)
 			if err != nil {
-				log.Error(err).
-					Str("file", path).
-					Msgf("%s update video error", tag)
+				return err
 			}
-			return nil
 		} else {
-			err = s.create(v, path)
-			if err != nil {
-				log.Error(err).
-					Str("file", path).
-					Msgf("%s create video error", tag)
-			}
-		}
-		return nil
-	})
-	if err != nil {
-		return err
-	}
-
-	// 清理数据库
-	resp, err := service.SelectVideos(nil)
-	if err != nil {
-		return err
-	}
-	for _, v := range resp.Records {
-		path := filepath.Join(s.root, v.Path)
-		if !Exists(path) {
-			err = service.DeleteVideo(v.Id)
-			if err != nil {
-				log.Error(err).
-					Str("file", path).
-					Msgf("%s delete video error", tag)
-			}
+			_ = s.parse(f, path)
 		}
 	}
 	return nil
 }
 
-func (s *Scanner) check(v *model.Video, path string) error {
-	h := xxhash.New()
-
-	// 检查格式
-	f, err := os.Open(path)
+func (s *Scanner) check(p string) error {
+	f, err := os.Open(p)
 	if err != nil {
 		return err
 	}
@@ -105,74 +58,57 @@ func (s *Scanner) check(v *model.Video, path string) error {
 	if !strings.HasPrefix(mime, "video/") {
 		return err
 	}
-
-	// 计算文件 hash
-	_, err = io.Copy(h, f)
-	if err != nil {
-		return err
-	}
-	v.Id = h.SumHex()
 	return nil
 }
 
-func (s *Scanner) create(v *model.Video, path string) error {
-	// 相对路径
-	rel, _ := filepath.Rel(s.root, path)
-	v.Path = rel
-
-	// 视频信息
-	vi, err := video.Parse(path)
+func (s *Scanner) parse(f os.DirEntry, p string) error {
+	err := s.check(p)
 	if err != nil {
 		log.Error(err).
-			Str("file", path).
-			Msgf("%s parse video error", tag)
+			Str("file", p).
+			Msgf("%s check video error", tag)
+		return err
+	}
+
+	// 基础信息
+	v := new(model.Video)
+	v.Name = f.Name()
+	v.Path = Rel(s.root, p)
+	v.Star = 0  // 默认未收藏
+	v.Tags = "" // 默认无标签
+	if service.CheckVideo(v) {
 		return nil
 	}
+	v.Id = uuid.NewUUID()
+
+	// 视频信息
+	vi, err := video.Parse(p)
+	if err != nil {
+		log.Error(err).
+			Str("file", p).
+			Msgf("%s parse video error", tag)
+		return err
+	}
+	v.Size = conv.ParseInt64(vi.Format.Size)
 	v.Format = vi.Format.FormatLongName
 	v.Duration = int64(conv.ParseFloat64(vi.Format.Duration))
 
-	cov, err := video.Thumbnail(path)
+	cov, err := video.Thumbnail(p)
 	if err != nil {
 		log.Error(err).
-			Str("file", path).
+			Str("file", p).
 			Msgf("%s thumbnail video error", tag)
-		return nil
+		return err
 	}
 	v.Cover = cov
 
 	// 保存数据库
-	return service.CreateVideo(v)
-}
-
-func (s *Scanner) update(v *model.Video, path string) error {
-	// 相对路径
-	rel, _ := filepath.Rel(s.root, path)
-	v.Path = rel
-	return service.UpdateVideo(v)
-}
-
-func (s *Scanner) Start() error {
-	i, err := os.Stat(s.root)
+	err = service.CreateVideo(v)
 	if err != nil {
+		log.Error(err).
+			Str("file", p).
+			Msgf("%s create video error", tag)
 		return err
 	}
-
-	// 判断是否是目录
-	if !i.IsDir() {
-		return os.ErrNotExist
-	}
-
-	// 判断权限是否符合要求
-	if i.Mode().Perm()&os.ModePerm != os.ModePerm {
-		return os.ErrPermission
-	}
-	for {
-		err = s.run()
-		if err != nil {
-			log.Error(err).
-				Str("root", s.root).
-				Msgf("%s scanner run error", tag)
-		}
-		time.Sleep(1 * time.Minute)
-	}
+	return nil
 }

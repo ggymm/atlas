@@ -16,8 +16,6 @@ func init() {
 }
 
 func Test_CheckVideo(t *testing.T) {
-	ok := service.CheckVideo("hash")
-	t.Logf("ok: %v", ok)
 }
 
 func Test_SelectVideos(t *testing.T) {

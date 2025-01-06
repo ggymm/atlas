@@ -2,7 +2,13 @@ package task
 
 import (
 	"os"
+	"path/filepath"
 )
+
+func Rel(root, path string) string {
+	p, _ := filepath.Rel(root, path)
+	return p
+}
 
 func Exists(path string) bool {
 	info, err := os.Stat(path)

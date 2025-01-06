@@ -15,7 +15,7 @@ type VideoPageResp struct {
 }
 
 func CheckVideo(v *model.Video) bool {
-	err := data.DB.First(&v).Error
+	err := data.DB.Where("path = ?", v.Path).Limit(1).Find(&v).Error
 	return err == nil && len(v.Id) > 0
 }
 
