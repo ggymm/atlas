@@ -1,6 +1,7 @@
 package api
 
 import (
+	"atlas/pkg/data/model"
 	"atlas/pkg/data/service"
 	"net/http"
 )
@@ -65,5 +66,20 @@ func (h *VideoApi) GetPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *VideoApi) GetCover(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		methodNotAllowed(w)
+		return
+	}
 
+	v := new(model.Video)
+	v.Id = r.PathValue("id")
+	err := service.GetVideo(v)
+	if err != nil {
+		internalServerError(w)
+		return
+	}
+
+	// 输出封面
+	w.Header().Set("Content-Type", "image/webp")
+	_, _ = w.Write(v.Cover)
 }

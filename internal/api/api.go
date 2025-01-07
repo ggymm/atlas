@@ -1,8 +1,9 @@
 package api
 
 import (
-	"github.com/ggymm/gopkg/cors"
 	"net/http"
+
+	"github.com/ggymm/gopkg/cors"
 
 	"atlas/pkg/app"
 	"atlas/pkg/log"
@@ -22,8 +23,8 @@ func NewServer() *Server {
 
 func (s *Server) Start() error {
 	handler := http.NewServeMux()
-	handler.HandleFunc("/api/v1/video/page", s.VideoApi.GetPage)
-	handler.HandleFunc("/api/v1/video/cover", s.VideoApi.GetCover)
+	handler.HandleFunc("/api/video/page", s.VideoApi.GetPage)
+	handler.HandleFunc("/api/video/cover/{id}", s.VideoApi.GetCover)
 
 	// 启动服务
 	log.Info().Msgf("[api] start")
