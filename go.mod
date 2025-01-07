@@ -2,10 +2,12 @@ module atlas
 
 go 1.23
 
+//replace github.com/ggymm/gopkg => ../gopkg
+
 require (
 	gioui.org v0.7.1
 	gioui.org/x v0.7.1
-	github.com/ggymm/gopkg v1.2.4
+	github.com/ggymm/gopkg v1.2.6
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.33.0
 	golang.org/x/image v0.23.0

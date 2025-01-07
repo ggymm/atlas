@@ -20,7 +20,7 @@ func Init() {
 		NamingStrategy: schema.NamingStrategy{
 			SingularTable: true,
 		},
-		Logger: nil,
+		Logger: NewCustomLog(),
 	})
 	if err != nil {
 		panic(err)

@@ -9,11 +9,61 @@ type VideoApi struct {
 	Api
 }
 
-func (h *VideoApi) SelectVideos(w http.ResponseWriter, r *http.Request) {
-	resp, err := service.SelectVideos(nil)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+type VideoResp struct {
+	Id        string `json:"id"`
+	Name      string `json:"name"`
+	Size      int64  `json:"size"`
+	Path      string `json:"path"`
+	Star      int64  `json:"star"`
+	Tags      string `json:"tags"`
+	Cover     string `json:"cover"`
+	Duration  int64  `json:"duration"`
+	UpdatedAt int64  `json:"updated_at"`
+}
+
+type VideoPageReq struct {
+	*service.Page
+}
+
+type VideoPageResp struct {
+	Total   int64        `json:"total"`
+	Records []*VideoResp `json:"records"`
+}
+
+func (h *VideoApi) GetPage(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		methodNotAllowed(w)
 		return
 	}
-	h.ok(w, resp)
+
+	req := new(VideoPageReq)
+	err := ParseJSON(r, &req)
+	if err != nil {
+		badRequest(w)
+		return
+	}
+
+	total, records, err := service.SelectVideos(req.Page, nil)
+	if err != nil {
+		internalServerError(w)
+		return
+	}
+	videos := make([]*VideoResp, len(records))
+	for i, v := range records {
+		videos[i] = &VideoResp{
+			Id:        v.Id,
+			Name:      v.Name,
+			Size:      v.Size,
+			Path:      v.Path,
+			Star:      v.Star,
+			Tags:      v.Tags,
+			Duration:  v.Duration,
+			UpdatedAt: v.UpdatedAt,
+		}
+	}
+	h.ok(w, VideoPageResp{Total: total, Records: videos})
+}
+
+func (h *VideoApi) GetCover(w http.ResponseWriter, r *http.Request) {
+
 }

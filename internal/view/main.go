@@ -114,20 +114,18 @@ func (ui *UI) Run(w *app.Window) error {
 func (ui *UI) Load() {
 	ui.loading = true
 	size := 60
-	data, err := service.SelectVideos(&service.VideoPageReq{
-		Page: service.Page{
-			Page: ui.page,
-			Size: size, // 每页显示数量
-		},
-	})
+	total, records, err := service.SelectVideos(&service.Page{
+		Page: ui.page,
+		Size: size, // 每页显示数量
+	}, nil)
 	ui.loading = false
 	if err != nil {
 		log.Error(err).Msg("fetch data error")
 		return
 	}
 
-	videos := make([]*Video, len(data.Records))
-	for i, r := range data.Records {
+	videos := make([]*Video, len(records))
+	for i, r := range records {
 		// 原始数据
 		v := &Video{
 			Id:        r.Id,
@@ -161,7 +159,7 @@ func (ui *UI) Load() {
 		videos[i] = v
 	}
 
-	ui.total = int(data.Total)
+	ui.total = int(total)
 	ui.records = videos
 
 	ui.pageNum = (ui.total + size - 1) / size // 计算总页数

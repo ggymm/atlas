@@ -29,6 +29,10 @@ func Log() string {
 	return filepath.Join(LogPath, Name+".log")
 }
 
+func DatabaseLog() string {
+	return filepath.Join(LogPath, Name+"-db.log")
+}
+
 type Config struct {
 	// App 应用配置
 	App struct {

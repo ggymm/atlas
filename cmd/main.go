@@ -1,13 +1,13 @@
 package main
 
 import (
-	"atlas/internal/task"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"atlas/internal/api"
+	"atlas/internal/task"
 	"atlas/pkg/app"
 	"atlas/pkg/data"
 	"atlas/pkg/log"

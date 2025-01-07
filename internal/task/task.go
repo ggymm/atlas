@@ -69,6 +69,7 @@ func (s *Scanner) Start() error {
 		return os.ErrPermission
 	}
 	for {
+		log.Info().Msgf("[task] start scanner")
 		err = s.walk(s.root)
 		if err != nil {
 			log.Error(err).
@@ -95,6 +96,6 @@ func (s *Scanner) Start() error {
 			}
 		}
 		data.Flush()
-		time.Sleep(1 * time.Minute)
+		time.Sleep(30 * time.Minute)
 	}
 }
