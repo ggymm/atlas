@@ -1,7 +1,6 @@
 package main
 
 import (
-	"atlas/internal/view"
 	"atlas/pkg/app"
 	"atlas/pkg/data"
 	"atlas/pkg/log"
@@ -14,5 +13,4 @@ func init() {
 }
 
 func main() {
-	view.Show()
 }

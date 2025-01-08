@@ -1,4 +1,4 @@
-## windows 精简编译 ffmpeg
+## ffmpeg 精简编译（msvc）
 
 ### 可执行文件
 
