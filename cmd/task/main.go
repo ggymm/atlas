@@ -1,7 +1,7 @@
-package task_test
+package main
 
 import (
-	"testing"
+	"fmt"
 	"time"
 
 	"atlas/internal/task"
@@ -16,12 +16,11 @@ func init() {
 	data.Init()
 }
 
-func TestScanner_Start(t *testing.T) {
+func main() {
 	now := time.Now()
 	err := task.NewScanner().Test()
 	if err != nil {
-		t.Fatal(err)
+		panic(err)
 	}
-
-	t.Logf("task.NewScanner().Start() cost: %v", time.Since(now))
+	fmt.Printf("task.NewScanner().Start() cost: %v", time.Since(now))
 }

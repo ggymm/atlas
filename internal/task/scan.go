@@ -9,6 +9,7 @@ import (
 	"github.com/ggymm/gopkg/conv"
 	"github.com/ggymm/gopkg/uuid"
 
+	"atlas/pkg/data"
 	"atlas/pkg/data/model"
 	"atlas/pkg/data/service"
 	"atlas/pkg/log"
@@ -72,10 +73,10 @@ func (s *Scanner) parse(f os.DirEntry, p string) error {
 
 	// 基础信息
 	v := new(model.Video)
-	v.Name = f.Name()
 	v.Path = Rel(s.root, p)
 	v.Star = 0  // 默认未收藏
 	v.Tags = "" // 默认无标签
+	v.Title = f.Name()
 	if service.CheckVideo(v) {
 		return nil
 	}
@@ -103,7 +104,7 @@ func (s *Scanner) parse(f os.DirEntry, p string) error {
 	v.Cover = cov
 
 	// 保存数据库
-	err = service.CreateVideo(v)
+	err = data.DB.Create(v).Error
 	if err != nil {
 		log.Error(err).
 			Str("file", p).

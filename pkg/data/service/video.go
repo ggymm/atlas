@@ -14,19 +14,7 @@ func CheckVideo(v *model.Video) bool {
 	return err == nil && len(v.Id) > 0
 }
 
-func CreateVideo(v *model.Video) error {
-	return data.DB.Create(v).Error
-}
-
-func UpdateVideo(v *model.Video) error {
-	return data.DB.Save(v).Error
-}
-
-func DeleteVideo(id string) error {
-	return data.DB.Delete(&model.Video{}, id).Error
-}
-
-func SelectVideos(page *Page, _ []map[string]any) (int64, []*model.Video, error) {
+func QueryVideos(page *Page) (int64, []*model.Video, error) {
 	var (
 		total   int64
 		records []*model.Video
@@ -52,4 +40,8 @@ func SelectVideos(page *Page, _ []map[string]any) (int64, []*model.Video, error)
 		}
 	}
 	return total, records, nil
+}
+
+func SearchVideos(page *Page, terms []string) (int64, []*model.Video, error) {
+	return 0, nil, nil
 }

@@ -1,9 +1,10 @@
 package api
 
 import (
+	"net/http"
+
 	"atlas/pkg/data/model"
 	"atlas/pkg/data/service"
-	"net/http"
 )
 
 type VideoApi struct {
@@ -12,11 +13,11 @@ type VideoApi struct {
 
 type VideoResp struct {
 	Id        string `json:"id"`
-	Name      string `json:"name"`
-	Size      int64  `json:"size"`
 	Path      string `json:"path"`
+	Size      int64  `json:"size"`
 	Star      int64  `json:"star"`
 	Tags      string `json:"tags"`
+	Title     string `json:"title"`
 	Cover     string `json:"cover"`
 	Duration  int64  `json:"duration"`
 	UpdatedAt int64  `json:"updated_at"`
@@ -44,7 +45,7 @@ func (h *VideoApi) GetPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	total, records, err := service.SelectVideos(req.Page, nil)
+	total, records, err := service.QueryVideos(req.Page)
 	if err != nil {
 		internalServerError(w)
 		return
@@ -53,11 +54,11 @@ func (h *VideoApi) GetPage(w http.ResponseWriter, r *http.Request) {
 	for i, v := range records {
 		videos[i] = &VideoResp{
 			Id:        v.Id,
-			Name:      v.Name,
-			Size:      v.Size,
 			Path:      v.Path,
+			Size:      v.Size,
 			Star:      v.Star,
 			Tags:      v.Tags,
+			Title:     v.Title,
 			Duration:  v.Duration,
 			UpdatedAt: v.UpdatedAt,
 		}
@@ -81,5 +82,8 @@ func (h *VideoApi) GetCover(w http.ResponseWriter, r *http.Request) {
 
 	// 输出封面
 	w.Header().Set("Content-Type", "image/webp")
+	w.Header().Set("Cache-Control", "no-store") // 禁止缓存，减少浏览器内存占用
+	w.Header().Set("Pragma", "no-cache")
+	w.Header().Set("Expires", "0")
 	_, _ = w.Write(v.Cover)
 }

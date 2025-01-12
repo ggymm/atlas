@@ -8,7 +8,6 @@ import (
 	"atlas/pkg/app"
 	"atlas/pkg/data"
 	"atlas/pkg/data/model"
-	"atlas/pkg/data/service"
 	"atlas/pkg/log"
 )
 
@@ -41,7 +40,7 @@ func (s *Scanner) Test() error {
 	for _, v := range videos {
 		path := filepath.Join(s.root, v.Path)
 		if !Exists(path) {
-			err = service.DeleteVideo(v.Id)
+			err = data.DB.Delete(&v).Error
 			if err != nil {
 				log.Error(err).
 					Str("file", path).
@@ -86,7 +85,7 @@ func (s *Scanner) Start() error {
 		for _, v := range videos {
 			path := filepath.Join(s.root, v.Path)
 			if !Exists(path) {
-				err = service.DeleteVideo(v.Id)
+				err = data.DB.Delete(&v).Error
 				if err != nil {
 					log.Error(err).
 						Str("file", path).
