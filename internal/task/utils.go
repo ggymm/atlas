@@ -5,12 +5,12 @@ import (
 	"path/filepath"
 )
 
-func Rel(root, path string) string {
+func rel(root, path string) string {
 	p, _ := filepath.Rel(root, path)
 	return p
 }
 
-func Exists(path string) bool {
+func exists(path string) bool {
 	info, err := os.Stat(path)
 	if err != nil {
 		if os.IsNotExist(err) {

@@ -1,6 +1,7 @@
 package task
 
 import (
+	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -9,10 +10,8 @@ import (
 	"github.com/ggymm/gopkg/conv"
 	"github.com/ggymm/gopkg/uuid"
 
-	"atlas/pkg/data"
 	"atlas/pkg/data/model"
 	"atlas/pkg/data/service"
-	"atlas/pkg/log"
 	"atlas/pkg/video"
 )
 
@@ -65,15 +64,17 @@ func (s *Scanner) check(p string) error {
 func (s *Scanner) parse(f os.DirEntry, p string) error {
 	err := s.check(p)
 	if err != nil {
-		log.Error(err).
-			Str("file", p).
-			Msgf("%s check video error", tag)
+		slog.Error("check video error",
+			slog.Any("error", err),
+			slog.String("file", p),
+			slog.String("task", tag),
+		)
 		return err
 	}
 
 	// 基础信息
 	v := new(model.Video)
-	v.Path = Rel(s.root, p)
+	v.Path = rel(s.root, p)
 	v.Star = 0  // 默认未收藏
 	v.Tags = "" // 默认无标签
 	v.Title = f.Name()
@@ -85,9 +86,11 @@ func (s *Scanner) parse(f os.DirEntry, p string) error {
 	// 视频信息
 	vi, err := video.Parse(p)
 	if err != nil {
-		log.Error(err).
-			Str("file", p).
-			Msgf("%s parse video error", tag)
+		slog.Error("parse video error",
+			slog.Any("error", err),
+			slog.String("file", p),
+			slog.String("task", tag),
+		)
 		return err
 	}
 	v.Size = conv.ParseInt64(vi.Format.Size)
@@ -96,19 +99,23 @@ func (s *Scanner) parse(f os.DirEntry, p string) error {
 
 	cov, err := video.Thumbnail(p)
 	if err != nil {
-		log.Error(err).
-			Str("file", p).
-			Msgf("%s thumbnail video error", tag)
+		slog.Error("thumbnail video error",
+			slog.Any("error", err),
+			slog.String("file", p),
+			slog.String("task", tag),
+		)
 		return err
 	}
 	v.Cover = cov
 
 	// 保存数据库
-	err = data.DB.Create(v).Error
+	err = service.CreateVideo(v)
 	if err != nil {
-		log.Error(err).
-			Str("file", p).
-			Msgf("%s create video error", tag)
+		slog.Error("create video error",
+			slog.Any("error", err),
+			slog.String("file", p),
+			slog.String("task", tag),
+		)
 		return err
 	}
 	return nil

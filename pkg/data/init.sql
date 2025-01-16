@@ -1,10 +1,3 @@
-CREATE TABLE IF NOT EXISTS "index"
-(
-    "id"    TEXT NOT NULL,
-    "term"  TEXT NOT NULL,
-    "score" INTEGER,
-    PRIMARY KEY ("id", "term")
-);
 CREATE TABLE IF NOT EXISTS "video"
 (
     "id"         TEXT NOT NULL,
@@ -19,4 +12,11 @@ CREATE TABLE IF NOT EXISTS "video"
     "created_at" INTEGER,
     "updated_at" INTEGER,
     PRIMARY KEY ("id")
+);
+CREATE VIRTUAL TABLE IF NOT EXISTS video_index USING fts5
+(
+    id,
+    tags,
+    title,
+    tokenize = 'simple'
 );

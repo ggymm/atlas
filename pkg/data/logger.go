@@ -2,41 +2,25 @@ package data
 
 import (
 	"context"
-	"github.com/pkg/errors"
-	"io"
-	"os"
+	"log/slog"
 	"strings"
 	"time"
 
-	"github.com/ggymm/gopkg/rolling"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/pkgerrors"
+	"github.com/ggymm/gopkg/log"
+	"github.com/pkg/errors"
 	"gorm.io/gorm/logger"
 
 	"atlas/pkg/app"
 )
 
 type CustomLog struct {
-	log      zerolog.Logger
+	log      *slog.Logger
 	LogLevel logger.LogLevel
 }
 
 func NewCustomLog() *CustomLog {
-	writers := io.MultiWriter(zerolog.ConsoleWriter{
-		Out:        os.Stderr,
-		TimeFormat: time.DateTime,
-	})
-	writers = io.MultiWriter(writers, &rolling.Logger{
-		Filename:   app.DatabaseLog(),
-		MaxSize:    256, // megabytes
-		MaxAge:     30,  // days
-		MaxBackups: 128, // files
-	})
-
-	zerolog.TimeFieldFormat = time.DateTime
-	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
 	return &CustomLog{
-		log:      zerolog.New(writers).With().Caller().Timestamp().Logger(),
+		log:      log.New(app.DatabaseLog(), slog.LevelInfo),
 		LogLevel: logger.Error,
 	}
 }
@@ -47,15 +31,15 @@ func (l *CustomLog) LogMode(level logger.LogLevel) logger.Interface {
 }
 
 func (l *CustomLog) Info(_ context.Context, msg string, data ...interface{}) {
-	l.log.Info().Msgf(msg, data...)
+	l.log.Info(msg, data...)
 }
 
 func (l *CustomLog) Warn(_ context.Context, msg string, data ...interface{}) {
-	l.log.Warn().Msgf(msg, data...)
+	l.log.Warn(msg, data...)
 }
 
 func (l *CustomLog) Error(_ context.Context, msg string, data ...interface{}) {
-	l.log.Error().Msgf(msg, data...)
+	l.log.Error(msg, data...)
 }
 
 // Trace print sql message
@@ -70,18 +54,20 @@ func (l *CustomLog) Trace(_ context.Context, begin time.Time, fc func() (string,
 
 	if err != nil {
 		if l.LogLevel >= logger.Error && !errors.Is(err, logger.ErrRecordNotFound) {
-			// 忽略记录不存在的错误
-			l.log.Error().Err(errors.WithStack(err)).
-				Str("sql", s).
-				Int64("cost", cost).
-				Int64("rowsAffected", r).Msg("SQLTrace")
+			l.log.Error("SQLTrace",
+				slog.Any("error", err),
+				slog.String("sql", s),
+				slog.Int64("cost", cost),
+				slog.Int64("rowsAffected", r),
+			)
 		}
 	} else {
 		if l.LogLevel >= logger.Info {
-			l.log.Info().
-				Str("sql", s).
-				Int64("cost", cost).
-				Int64("rowsAffected", r).Msg("SQLTrace")
+			l.log.Info("SQLTrace",
+				slog.String("sql", s),
+				slog.Int64("cost", cost),
+				slog.Int64("rowsAffected", r),
+			)
 		}
 	}
 }

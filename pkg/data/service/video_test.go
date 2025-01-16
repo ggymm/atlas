@@ -19,15 +19,15 @@ func Test_CheckVideo(t *testing.T) {
 }
 
 func Test_QueryVideos(t *testing.T) {
-	total, records, err := service.QueryVideos(&service.Page{
+	resp, err := service.QueryVideos(&service.PageReq{
 		Page: 1,
 		Size: 20, // 每页显示数量
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Logf("total: %+v", total)
-	for _, v := range records {
+	t.Logf("total: %+v", resp.Total)
+	for _, v := range resp.Records {
 		t.Logf("record: %+v", v)
 	}
 }

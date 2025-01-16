@@ -1,6 +1,8 @@
 package task
 
 import (
+	"atlas/pkg/data/service"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"time"
@@ -8,7 +10,6 @@ import (
 	"atlas/pkg/app"
 	"atlas/pkg/data"
 	"atlas/pkg/data/model"
-	"atlas/pkg/log"
 )
 
 type Scanner struct {
@@ -24,27 +25,32 @@ func NewScanner() *Scanner {
 func (s *Scanner) Test() error {
 	err := s.walk(s.root)
 	if err != nil {
-		log.Error(err).
-			Str("root", s.root).
-			Msgf("%s scanner run error", tag)
+		slog.Error("run error",
+			slog.Any("error", err),
+			slog.String("task", tag),
+			slog.String("root", s.root),
+		)
 		return err
 	}
 
 	videos := make([]*model.Video, 0)
 	err = data.DB.Find(&videos).Error
 	if err != nil {
-		log.Error(err).
-			Msgf("%s query videos error", tag)
+		slog.Error("query videos error",
+			slog.Any("error", err),
+			slog.String("task", tag),
+		)
 		return err
 	}
 	for _, v := range videos {
 		path := filepath.Join(s.root, v.Path)
-		if !Exists(path) {
-			err = data.DB.Delete(&v).Error
+		if !exists(path) {
+			err = service.DeleteVideo(v)
 			if err != nil {
-				log.Error(err).
-					Str("file", path).
-					Msgf("%s delete video error", tag)
+				slog.Error("delete video error",
+					slog.Any("error", err),
+					slog.String("task", tag),
+				)
 				continue
 			}
 		}
@@ -68,28 +74,33 @@ func (s *Scanner) Start() error {
 		return os.ErrPermission
 	}
 	for {
-		log.Info().Msgf("[task] start scanner")
+		slog.Info("[task] scanner start")
 		err = s.walk(s.root)
 		if err != nil {
-			log.Error(err).
-				Str("root", s.root).
-				Msgf("%s scanner run error", tag)
+			slog.Error("run error",
+				slog.Any("error", err),
+				slog.String("task", tag),
+				slog.String("root", s.root),
+			)
 		}
 
 		videos := make([]*model.Video, 0)
 		err = data.DB.Find(&videos).Error
 		if err != nil {
-			log.Error(err).
-				Msgf("%s query videos error", tag)
+			slog.Error("query videos error",
+				slog.Any("error", err),
+				slog.String("task", tag),
+			)
 		}
 		for _, v := range videos {
 			path := filepath.Join(s.root, v.Path)
-			if !Exists(path) {
-				err = data.DB.Delete(&v).Error
+			if !exists(path) {
+				err = service.DeleteVideo(v)
 				if err != nil {
-					log.Error(err).
-						Str("file", path).
-						Msgf("%s delete video error", tag)
+					slog.Error("delete video error",
+						slog.Any("error", err),
+						slog.String("task", tag),
+					)
 					continue
 				}
 			}

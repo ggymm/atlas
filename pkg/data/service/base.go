@@ -1,52 +1,40 @@
 package service
 
-const (
-	timeFormat = "2006-01-02 15:04:05"
-)
-
-type Get struct {
-	Id int64 `json:"id" validate:"required"`
+type PageReq struct {
+	Page int
+	Size int
 }
 
-type Delete struct {
-	Id int64 `json:"id" validate:"required"`
-}
-
-type Page struct {
-	Page int `query:"page"`
-	Size int `query:"size"`
-}
-
-func (p *Page) GetPage() int {
+func (p *PageReq) GetPage() int {
 	if p.Page <= 0 {
 		p.Page = 1
 	}
 	return p.Page
 }
 
-func (p *Page) GetSize() int {
+func (p *PageReq) GetSize() int {
 	if p.Size <= 0 {
 		p.Size = 10
 	}
 	return p.Size
 }
 
-func (p *Page) GetOffset() int {
+func (p *PageReq) GetOffset() int {
 	return (p.GetPage() - 1) * p.GetSize()
 }
 
-type Option struct {
-	Value int64  `json:"value"`
-	Label string `json:"label"`
+type PageResp[T any] struct {
+	Total   int64
+	Records []*T
 }
 
-type PageList struct {
-	List  any   `json:"list"`
-	Total int64 `json:"total"`
+type OptionResp struct {
+	Value int64
+	Label string
 }
 
-type TreeNode[T any] struct {
-	Key      int64  `json:"key"`
-	Label    string `json:"label"`
-	Children []*T   `json:"children"`
+type TreeNodeResp[T any] struct {
+	Key      int64
+	Label    string
+	Children []*T
 }

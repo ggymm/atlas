@@ -23,6 +23,9 @@ var (
 
 var (
 	Datasource string
+
+	SimpleDict      string
+	SimpleExtension string
 )
 
 func Log() string {
@@ -56,6 +59,7 @@ type Config struct {
 	// Database 数据库配置
 	Database struct {
 		Source string `ini:"source"`
+		Simple string `ini:"simple"`
 	} `ini:"database"`
 }
 
@@ -82,4 +86,6 @@ func InitConfig() {
 	Ffprobe = filepath.Join(base, cfg.Bin.Ffprobe)
 
 	Datasource = "file:" + filepath.Join(root, cfg.Database.Source)
+	SimpleDict = filepath.Join(root, cfg.Database.Simple, "dict")
+	SimpleExtension = filepath.Join(root, cfg.Database.Simple, "simple")
 }

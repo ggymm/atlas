@@ -24,7 +24,7 @@ type VideoResp struct {
 }
 
 type VideoPageReq struct {
-	*service.Page
+	*service.PageReq
 }
 
 type VideoPageResp struct {
@@ -45,13 +45,13 @@ func (h *VideoApi) GetPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	total, records, err := service.QueryVideos(req.Page)
+	resp, err := service.QueryVideos(req.PageReq)
 	if err != nil {
 		internalServerError(w)
 		return
 	}
-	videos := make([]*VideoResp, len(records))
-	for i, v := range records {
+	videos := make([]*VideoResp, len(resp.Records))
+	for i, v := range resp.Records {
 		videos[i] = &VideoResp{
 			Id:        v.Id,
 			Path:      v.Path,
@@ -63,7 +63,7 @@ func (h *VideoApi) GetPage(w http.ResponseWriter, r *http.Request) {
 			UpdatedAt: v.UpdatedAt,
 		}
 	}
-	h.ok(w, VideoPageResp{Total: total, Records: videos})
+	h.ok(w, VideoPageResp{Total: resp.Total, Records: videos})
 }
 
 func (h *VideoApi) GetCover(w http.ResponseWriter, r *http.Request) {
