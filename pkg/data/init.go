@@ -1,8 +1,8 @@
 package data
 
 import (
-	"database/sql"
 	_ "embed"
+	"log/slog"
 
 	"github.com/mattn/go-sqlite3"
 	"gorm.io/driver/sqlite"
@@ -18,19 +18,11 @@ var DB *gorm.DB
 var initSQL string
 
 func Init() {
-	// db, err := gorm.Open(sqlite.Open(app.Datasource), &gorm.Config{
-	// 	NamingStrategy: schema.NamingStrategy{
-	// 		SingularTable: true,
-	// 	},
-	// })
-	name := "sqlite3_simple"
-	sql.Register(name, &sqlite3.SQLiteDriver{
-		Extensions: []string{app.SimpleExtension},
-	})
-	db, err := gorm.Open(sqlite.Dialector{DriverName: name, DSN: app.Datasource}, &gorm.Config{
+	db, err := gorm.Open(sqlite.Open(app.Datasource), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
 			SingularTable: true,
 		},
+		Logger: NewCustomLog(),
 	})
 	if err != nil {
 		panic(err)
@@ -43,13 +35,8 @@ func Init() {
 		return
 	}
 
-	// 执行设置 jieba 词典
-	configSQL := "select jieba_dict('" + app.SimpleDict + "')"
-	err = db.Exec(configSQL).Error
-	if err != nil {
-		panic(err)
-		return
-	}
+	v1, _, _ := sqlite3.Version()
+	slog.Info("sqlite3 db", "dsn", app.Datasource, "version", v1)
 
 	// 导出数据库对象
 	DB = db

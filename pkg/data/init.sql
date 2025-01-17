@@ -13,10 +13,3 @@ CREATE TABLE IF NOT EXISTS "video"
     "updated_at" INTEGER,
     PRIMARY KEY ("id")
 );
-CREATE VIRTUAL TABLE IF NOT EXISTS video_index USING fts5
-(
-    id,
-    tags,
-    title,
-    tokenize = 'simple'
-);

@@ -1,7 +1,6 @@
 package task
 
 import (
-	"atlas/pkg/data/service"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -45,7 +44,7 @@ func (s *Scanner) Test() error {
 	for _, v := range videos {
 		path := filepath.Join(s.root, v.Path)
 		if !exists(path) {
-			err = service.DeleteVideo(v)
+			err = data.DB.Delete(v).Error
 			if err != nil {
 				slog.Error("delete video error",
 					slog.Any("error", err),
@@ -95,7 +94,7 @@ func (s *Scanner) Start() error {
 		for _, v := range videos {
 			path := filepath.Join(s.root, v.Path)
 			if !exists(path) {
-				err = service.DeleteVideo(v)
+				err = data.DB.Delete(v).Error
 				if err != nil {
 					slog.Error("delete video error",
 						slog.Any("error", err),

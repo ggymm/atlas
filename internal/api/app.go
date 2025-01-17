@@ -28,8 +28,8 @@ func (s *Server) Start() error {
 
 	handler.HandleFunc("/api/task/exec", s.TaskApi.Exec)
 
-	handler.HandleFunc("/api/video/page", s.VideoApi.GetPage)
-	handler.HandleFunc("/api/video/cover/{id}", s.VideoApi.GetCover)
+	handler.HandleFunc("/api/video/cover/{id}", s.VideoApi.Cover)
+	handler.HandleFunc("/api/video/query/page", s.VideoApi.QueryPage)
 
 	// 启动服务
 	slog.Info("[api] server start addr " + s.Addr)

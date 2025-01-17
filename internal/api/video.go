@@ -3,6 +3,7 @@ package api
 import (
 	"net/http"
 
+	"atlas/pkg/data"
 	"atlas/pkg/data/model"
 	"atlas/pkg/data/service"
 )
@@ -25,6 +26,10 @@ type VideoResp struct {
 
 type VideoPageReq struct {
 	*service.PageReq
+
+	Tags   string `json:"tags"`
+	Order  string `json:"order"`
+	Search string `json:"search"`
 }
 
 type VideoPageResp struct {
@@ -32,27 +37,34 @@ type VideoPageResp struct {
 	Records []*VideoResp `json:"records"`
 }
 
-func (h *VideoApi) GetPage(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		methodNotAllowed(w)
-		return
+func query(req *VideoPageReq) (*VideoPageResp, error) {
+	var (
+		size    = 20
+		offset  = 1
+		records []*model.Video
+	)
+	if req.PageReq != nil {
+		size = req.PageReq.GetSize()
+		offset = req.PageReq.GetOffset()
+	}
+	resp := new(VideoPageResp)
+
+	// 查询总数
+	err := data.DB.Model(&model.Video{}).Count(&resp.Total).Error
+	if err != nil {
+		return nil, err
 	}
 
-	req := new(VideoPageReq)
-	err := ParseJSON(r, &req)
+	// 查询列表
+	err = data.DB.Limit(size).Offset(offset).Find(&records).Error
 	if err != nil {
-		badRequest(w)
-		return
+		return nil, err
 	}
 
-	resp, err := service.QueryVideos(req.PageReq)
-	if err != nil {
-		internalServerError(w)
-		return
-	}
-	videos := make([]*VideoResp, len(resp.Records))
-	for i, v := range resp.Records {
-		videos[i] = &VideoResp{
+	// 视频列表
+	resp.Records = make([]*VideoResp, len(records))
+	for i, v := range records {
+		resp.Records[i] = &VideoResp{
 			Id:        v.Id,
 			Path:      v.Path,
 			Size:      v.Size,
@@ -63,10 +75,54 @@ func (h *VideoApi) GetPage(w http.ResponseWriter, r *http.Request) {
 			UpdatedAt: v.UpdatedAt,
 		}
 	}
-	h.ok(w, VideoPageResp{Total: resp.Total, Records: videos})
+	return resp, nil
 }
 
-func (h *VideoApi) GetCover(w http.ResponseWriter, r *http.Request) {
+func search(req *VideoPageReq) (*VideoPageResp, error) {
+	var (
+		size    = 20
+		offset  = 1
+		records []*model.Video
+	)
+	if req.PageReq != nil {
+		size = req.PageReq.GetSize()
+		offset = req.PageReq.GetOffset()
+	}
+	resp := new(VideoPageResp)
+
+	args := make([]any, 0)
+	where := buildQuery(parseExpr(req.Search), &args)
+
+	// 查询总数
+	err := data.DB.Model(&model.Video{}).Where(where, args).Count(&resp.Total).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// 查询列表
+	err = data.DB.Limit(size).Offset(offset).Where(where, args).Find(&records).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// 视频列表
+	resp.Records = make([]*VideoResp, len(records))
+	for i, v := range records {
+		resp.Records[i] = &VideoResp{
+			Id:        v.Id,
+			Path:      v.Path,
+			Size:      v.Size,
+			Star:      v.Star,
+			Tags:      v.Tags,
+			Title:     v.Title,
+			Duration:  v.Duration,
+			UpdatedAt: v.UpdatedAt,
+		}
+	}
+	return resp, nil
+}
+
+func (h *VideoApi) Cover(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		methodNotAllowed(w)
 		return
@@ -86,4 +142,32 @@ func (h *VideoApi) GetCover(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Pragma", "no-cache")
 	w.Header().Set("Expires", "0")
 	_, _ = w.Write(v.Cover)
+}
+
+func (h *VideoApi) QueryPage(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		methodNotAllowed(w)
+		return
+	}
+	req := new(VideoPageReq)
+	resp := new(VideoPageResp)
+
+	// 解析请求
+	err := ParseJSON(r, &req)
+	if err != nil {
+		badRequest(w)
+		return
+	}
+
+	// 执行查询
+	if len(req.Search) == 0 {
+		resp, err = query(req)
+	} else {
+		resp, err = search(req)
+	}
+	if err != nil {
+		internalServerError(w)
+		return
+	}
+	h.ok(w, resp)
 }

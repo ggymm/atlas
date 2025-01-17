@@ -21,7 +21,7 @@ type CustomLog struct {
 func NewCustomLog() *CustomLog {
 	return &CustomLog{
 		log:      log.New(app.DatabaseLog(), slog.LevelInfo),
-		LogLevel: logger.Error,
+		LogLevel: logger.Info,
 	}
 }
 

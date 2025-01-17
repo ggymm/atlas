@@ -23,17 +23,14 @@ var (
 
 var (
 	Datasource string
-
-	SimpleDict      string
-	SimpleExtension string
 )
 
 func Log() string {
-	return filepath.Join(LogPath, Name+".log")
+	return filepath.Join(base, LogPath, Name+".log")
 }
 
 func DatabaseLog() string {
-	return filepath.Join(LogPath, Name+"-db.log")
+	return filepath.Join(base, LogPath, Name+"-db.log")
 }
 
 type Config struct {
@@ -59,15 +56,13 @@ type Config struct {
 	// Database 数据库配置
 	Database struct {
 		Source string `ini:"source"`
-		Simple string `ini:"simple"`
 	} `ini:"database"`
 }
 
 func InitConfig() {
 	var (
 		cfg  = new(Config)
-		root = rootPath()
-		path = filepath.Join(root, "config.ini")
+		path = filepath.Join(base, "config.ini")
 	)
 
 	err := ini.MapTo(cfg, path)
@@ -81,11 +76,9 @@ func InitConfig() {
 
 	LogPath = cfg.Log.Path
 
-	base := filepath.Join(root, cfg.Bin.Root)
+	base := filepath.Join(base, cfg.Bin.Root)
 	Ffmpeg = filepath.Join(base, cfg.Bin.Ffmpeg)
 	Ffprobe = filepath.Join(base, cfg.Bin.Ffprobe)
 
-	Datasource = "file:" + filepath.Join(root, cfg.Database.Source)
-	SimpleDict = filepath.Join(root, cfg.Database.Simple, "dict")
-	SimpleExtension = filepath.Join(root, cfg.Database.Simple, "simple")
+	Datasource = "file:" + filepath.Join(base, cfg.Database.Source)
 }

@@ -1,0 +1,113 @@
+state 0 //
+
+    0 $accept: . or_expr
+
+    IDENT   shift, and goto state 4
+    LPAREN  shift, and goto state 5
+
+    and_expr  goto state 2
+    or_expr   goto state 1
+    primary   goto state 3
+
+state 1 // IDENT [$end]
+
+    0 $accept: or_expr .  [$end]
+    2 or_expr: or_expr . OR and_expr  // assoc %left, prec 1
+
+    $end  accept
+    OR    shift, and goto state 7
+
+state 2 // IDENT [$end]
+
+    1 or_expr: and_expr .  [$end, OR, RPAREN]
+    4 and_expr: and_expr . AND primary  // assoc %left, prec 2
+
+    $end    reduce using rule 1 (or_expr)
+    AND     shift, and goto state 10
+    OR      reduce using rule 1 (or_expr)
+    RPAREN  reduce using rule 1 (or_expr)
+
+state 3 // IDENT [$end]
+
+    3 and_expr: primary .  [$end, AND, OR, RPAREN]
+
+    $end    reduce using rule 3 (and_expr)
+    AND     reduce using rule 3 (and_expr)
+    OR      reduce using rule 3 (and_expr)
+    RPAREN  reduce using rule 3 (and_expr)
+
+state 4 // IDENT
+
+    5 primary: IDENT .  [$end, AND, OR, RPAREN]
+
+    $end    reduce using rule 5 (primary)
+    AND     reduce using rule 5 (primary)
+    OR      reduce using rule 5 (primary)
+    RPAREN  reduce using rule 5 (primary)
+
+state 5 // LPAREN
+
+    6 primary: LPAREN . or_expr RPAREN
+
+    IDENT   shift, and goto state 4
+    LPAREN  shift, and goto state 5
+
+    and_expr  goto state 2
+    or_expr   goto state 6
+    primary   goto state 3
+
+state 6 // LPAREN IDENT [OR]
+
+    2 or_expr: or_expr . OR and_expr  // assoc %left, prec 1
+    6 primary: LPAREN or_expr . RPAREN
+
+    OR      shift, and goto state 7
+    RPAREN  shift, and goto state 8
+
+state 7 // IDENT OR
+
+    2 or_expr: or_expr OR . and_expr  // assoc %left, prec 1
+
+    IDENT   shift, and goto state 4
+    LPAREN  shift, and goto state 5
+
+    and_expr  goto state 9
+    primary   goto state 3
+
+state 8 // LPAREN IDENT RPAREN
+
+    6 primary: LPAREN or_expr RPAREN .  [$end, AND, OR, RPAREN]
+
+    $end    reduce using rule 6 (primary)
+    AND     reduce using rule 6 (primary)
+    OR      reduce using rule 6 (primary)
+    RPAREN  reduce using rule 6 (primary)
+
+state 9 // IDENT OR IDENT [$end]
+
+    2 or_expr: or_expr OR and_expr .  [$end, OR, RPAREN]  // assoc %left, prec 1
+    4 and_expr: and_expr . AND primary  // assoc %left, prec 2
+
+    $end    reduce using rule 2 (or_expr)
+    AND     shift, and goto state 10
+    OR      reduce using rule 2 (or_expr)
+    RPAREN  reduce using rule 2 (or_expr)
+
+state 10 // IDENT AND
+
+    4 and_expr: and_expr AND . primary  // assoc %left, prec 2
+
+    IDENT   shift, and goto state 4
+    LPAREN  shift, and goto state 5
+
+    primary  goto state 11
+
+state 11 // IDENT AND IDENT [$end]
+
+    4 and_expr: and_expr AND primary .  [$end, AND, OR, RPAREN]  // assoc %left, prec 2
+
+    $end    reduce using rule 4 (and_expr)
+    AND     reduce using rule 4 (and_expr)
+    OR      reduce using rule 4 (and_expr)
+    RPAREN  reduce using rule 4 (and_expr)
+

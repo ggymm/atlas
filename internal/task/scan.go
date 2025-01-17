@@ -10,6 +10,7 @@ import (
 	"github.com/ggymm/gopkg/conv"
 	"github.com/ggymm/gopkg/uuid"
 
+	"atlas/pkg/data"
 	"atlas/pkg/data/model"
 	"atlas/pkg/data/service"
 	"atlas/pkg/video"
@@ -109,7 +110,7 @@ func (s *Scanner) parse(f os.DirEntry, p string) error {
 	v.Cover = cov
 
 	// 保存数据库
-	err = service.CreateVideo(v)
+	err = data.DB.Create(v).Error
 	if err != nil {
 		slog.Error("create video error",
 			slog.Any("error", err),
