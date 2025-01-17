@@ -22,7 +22,7 @@ func buildQuery(node *expr.CondNode, args *[]any) string {
 		if len(node.Children) > 1 {
 			conds := make([]string, 0, len(node.Children))
 			for _, child := range node.Children {
-				conds = append(conds, BuildQuery(child, args))
+				conds = append(conds, buildQuery(child, args))
 			}
 			// 使用 AND 连接条件
 			return fmt.Sprintf("(%s)", strings.Join(conds, " AND "))
@@ -32,7 +32,7 @@ func buildQuery(node *expr.CondNode, args *[]any) string {
 		if len(node.Children) > 1 {
 			conds := make([]string, 0, len(node.Children))
 			for _, child := range node.Children {
-				conds = append(conds, BuildQuery(child, args))
+				conds = append(conds, buildQuery(child, args))
 			}
 			// 使用 OR 连接条件
 			return fmt.Sprintf("(%s)", strings.Join(conds, " OR "))

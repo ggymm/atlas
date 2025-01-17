@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	base    = rootPath()
+	root    = rootPath()
 	tempDir = os.TempDir()
 )
 

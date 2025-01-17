@@ -13,3 +13,7 @@ type Video struct {
 	CreatedAt int64  `gorm:"column:created_at;type:integer;autoCreateTime:milli;comment:创建时间"`
 	UpdatedAt int64  `gorm:"column:updated_at;type:integer;autoCreateTime:milli;comment:更新时间"`
 }
+
+func (*Video) TableName() string {
+	return "video"
+}

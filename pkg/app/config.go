@@ -26,11 +26,11 @@ var (
 )
 
 func Log() string {
-	return filepath.Join(base, LogPath, Name+".log")
+	return filepath.Join(root, LogPath, Name+".log")
 }
 
 func DatabaseLog() string {
-	return filepath.Join(base, LogPath, Name+"-db.log")
+	return filepath.Join(root, LogPath, Name+"-db.log")
 }
 
 type Config struct {
@@ -62,7 +62,7 @@ type Config struct {
 func InitConfig() {
 	var (
 		cfg  = new(Config)
-		path = filepath.Join(base, "config.ini")
+		path = filepath.Join(root, "config.ini")
 	)
 
 	err := ini.MapTo(cfg, path)
@@ -76,9 +76,9 @@ func InitConfig() {
 
 	LogPath = cfg.Log.Path
 
-	base := filepath.Join(base, cfg.Bin.Root)
+	base := filepath.Join(root, cfg.Bin.Root)
 	Ffmpeg = filepath.Join(base, cfg.Bin.Ffmpeg)
 	Ffprobe = filepath.Join(base, cfg.Bin.Ffprobe)
 
-	Datasource = "file:" + filepath.Join(base, cfg.Database.Source)
+	Datasource = "file:" + filepath.Join(root, cfg.Database.Source)
 }
