@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -19,14 +18,17 @@ func (h *TaskApi) Exec(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 开始时间
 	now := time.Now()
+
+	// 执行任务
 	err := task.NewScanner().Start()
 	if err != nil {
-		panic(err)
+		h.error(w, http.StatusInternalServerError, err.Error())
+		return
 	}
-	fmt.Printf("task.NewScanner().Start() cost: %v", time.Since(now))
 
-	h.ok(w, "ok")
+	h.ok(w, time.Since(now).String())
 }
 
 func (h *TaskApi) Clean(w http.ResponseWriter, r *http.Request) {
@@ -36,7 +38,7 @@ func (h *TaskApi) Clean(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 开始时间
-	start := time.Now()
+	now := time.Now()
 
 	// 删除表
 	data.DB.Exec("DROP TABLE IF EXISTS video")
@@ -48,5 +50,5 @@ func (h *TaskApi) Clean(w http.ResponseWriter, r *http.Request) {
 	data.DB.Exec(data.InitSQL)
 
 	// 返回结果
-	h.ok(w, time.Since(start).String())
+	h.ok(w, time.Since(now).String())
 }
