@@ -1,12 +1,14 @@
 package api
 
 import (
+	"log/slog"
+	"net/http"
+
+	"atlas/pkg/app"
 	"atlas/pkg/data"
 	"atlas/pkg/data/model"
 	"atlas/pkg/data/service"
 	"atlas/pkg/utils"
-	"log/slog"
-	"net/http"
 )
 
 type VideoApi struct {
@@ -42,10 +44,12 @@ type VideoPageResp struct {
 	Records []*VideoResp `json:"records"`
 }
 
-type VideoStatsResp struct {
+type VideoInfoResp struct {
+	Root string `json:"root"`
+
 	Total         int64  `json:"total"`
-	TotalSize     string `json:"total_size"`
-	TotalDuration string `json:"total_duration"`
+	TotalSize     string `json:"totalSize"`
+	TotalDuration string `json:"totalDuration"`
 }
 
 func (h *VideoApi) Cover(w http.ResponseWriter, r *http.Request) {
@@ -68,6 +72,32 @@ func (h *VideoApi) Cover(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Pragma", "no-cache")
 	w.Header().Set("Expires", "0")
 	_, _ = w.Write(v.Cover)
+}
+
+func (h *VideoApi) QueryInfo(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		methodNotAllowed(w)
+		return
+	}
+
+	ret := struct {
+		Total         int64 `gorm:"column:total"`
+		TotalSize     int64 `gorm:"column:total_size"`
+		TotalDuration int64 `gorm:"column:total_duration"`
+	}{}
+	fields := "count(id) as total, sum(size) as total_size, sum(duration) as total_duration"
+	err := data.DB.Model(&model.Video{}).Select(fields).First(&ret).Error
+	if err != nil {
+		internalServerError(w)
+		return
+	}
+
+	info := new(VideoInfoResp)
+	info.Root = app.Root
+	info.Total = ret.Total
+	info.TotalSize = utils.FormatSize(ret.TotalSize)
+	info.TotalDuration = utils.FormatDuration(ret.TotalDuration)
+	h.ok(w, info)
 }
 
 func (h *VideoApi) QueryPage(w http.ResponseWriter, r *http.Request) {
@@ -119,25 +149,5 @@ func (h *VideoApi) QueryPage(w http.ResponseWriter, r *http.Request) {
 		internalServerError(w)
 		return
 	}
-	h.ok(w, resp)
-}
-
-func (h *VideoApi) QueryStats(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		methodNotAllowed(w)
-		return
-	}
-	ret := make(map[string]any)
-	fields := "count(id) as total, sum(size) as total_size, sum(duration) as total_duration"
-	err := data.DB.Model(&model.Video{}).Select(fields).First(&ret).Error
-	if err != nil {
-		internalServerError(w)
-		return
-	}
-
-	resp := new(VideoStatsResp)
-	resp.Total = ret["total"].(int64)
-	resp.TotalSize = utils.FormatSize(ret["total_size"].(int64))
-	resp.TotalDuration = utils.FormatDuration(ret["total_duration"].(int64))
 	h.ok(w, resp)
 }

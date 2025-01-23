@@ -15,7 +15,7 @@ import (
 var DB *gorm.DB
 
 //go:embed init.sql
-var initSQL string
+var InitSQL string
 
 func Init() {
 	db, err := gorm.Open(sqlite.Open(app.Datasource), &gorm.Config{
@@ -29,14 +29,14 @@ func Init() {
 		return
 	}
 
-	err = db.Exec(initSQL).Error
+	err = db.Exec(InitSQL).Error
 	if err != nil {
 		panic(err)
 		return
 	}
 
 	v1, _, _ := sqlite3.Version()
-	slog.Info("sqlite3 db", "dsn", app.Datasource, "version", v1)
+	slog.Info("sqlite", "version", v1)
 
 	// 导出数据库对象
 	DB = db

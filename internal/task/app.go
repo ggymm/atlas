@@ -4,7 +4,6 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
-	"time"
 
 	"atlas/pkg/app"
 	"atlas/pkg/data"
@@ -21,17 +20,34 @@ func NewScanner() *Scanner {
 	}
 }
 
-func (s *Scanner) Test() error {
-	err := s.walk(s.root)
+func (s *Scanner) Start() error {
+	st, err := os.Stat(s.root)
+	if err != nil {
+		return err
+	}
+
+	// 判断是否是目录
+	if !st.IsDir() {
+		return os.ErrNotExist
+	}
+
+	// 判断权限是否符合要求
+	if st.Mode().Perm()&os.ModePerm != os.ModePerm {
+		return os.ErrPermission
+	}
+
+	// 执行扫描
+	slog.Info("[task] scanner start")
+	err = s.walk(s.root)
 	if err != nil {
 		slog.Error("run error",
 			slog.Any("error", err),
 			slog.String("task", tag),
 			slog.String("root", s.root),
 		)
-		return err
 	}
 
+	// 执行清理
 	videos := make([]*model.Video, 0)
 	err = data.DB.Find(&videos).Error
 	if err != nil {
@@ -39,7 +55,6 @@ func (s *Scanner) Test() error {
 			slog.Any("error", err),
 			slog.String("task", tag),
 		)
-		return err
 	}
 	for _, v := range videos {
 		path := filepath.Join(s.root, v.Path)
@@ -54,57 +69,6 @@ func (s *Scanner) Test() error {
 			}
 		}
 	}
+	data.Flush()
 	return nil
-}
-
-func (s *Scanner) Start() error {
-	i, err := os.Stat(s.root)
-	if err != nil {
-		return err
-	}
-
-	// 判断是否是目录
-	if !i.IsDir() {
-		return os.ErrNotExist
-	}
-
-	// 判断权限是否符合要求
-	if i.Mode().Perm()&os.ModePerm != os.ModePerm {
-		return os.ErrPermission
-	}
-	for {
-		slog.Info("[task] scanner start")
-		err = s.walk(s.root)
-		if err != nil {
-			slog.Error("run error",
-				slog.Any("error", err),
-				slog.String("task", tag),
-				slog.String("root", s.root),
-			)
-		}
-
-		videos := make([]*model.Video, 0)
-		err = data.DB.Find(&videos).Error
-		if err != nil {
-			slog.Error("query videos error",
-				slog.Any("error", err),
-				slog.String("task", tag),
-			)
-		}
-		for _, v := range videos {
-			path := filepath.Join(s.root, v.Path)
-			if !exists(path) {
-				err = data.DB.Delete(v).Error
-				if err != nil {
-					slog.Error("delete video error",
-						slog.Any("error", err),
-						slog.String("task", tag),
-					)
-					continue
-				}
-			}
-		}
-		data.Flush()
-		time.Sleep(30 * time.Minute)
-	}
 }

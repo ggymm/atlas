@@ -18,7 +18,7 @@ func init() {
 
 func main() {
 	now := time.Now()
-	err := task.NewScanner().Test()
+	err := task.NewScanner().Start()
 	if err != nil {
 		panic(err)
 	}

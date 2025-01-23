@@ -7,9 +7,11 @@ import (
 )
 
 var (
-	Name string
-	Addr string
-	Root string
+	Name   string
+	Addr   string
+	View   string
+	Root   string
+	Player string
 )
 
 var (
@@ -36,9 +38,11 @@ func DatabaseLog() string {
 type Config struct {
 	// App 应用配置
 	App struct {
-		Name string `ini:"name"`
-		Addr string `ini:"addr"`
-		Root string `ini:"root"`
+		Name   string `ini:"name"`
+		Addr   string `ini:"addr"`
+		View   string `ini:"view"`
+		Root   string `ini:"root"`
+		Player string `ini:"player"`
 	} `ini:"app"`
 
 	// Log 日志配置
@@ -72,7 +76,9 @@ func InitConfig() {
 
 	Name = cfg.App.Name
 	Addr = cfg.App.Addr
+	View = cfg.App.View
 	Root = cfg.App.Root
+	Player = cfg.App.Player
 
 	LogPath = cfg.Log.Path
 

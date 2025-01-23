@@ -27,12 +27,13 @@ func (s *Server) Start() error {
 	handler := http.NewServeMux()
 
 	handler.HandleFunc("/api/task/exec", s.TaskApi.Exec)
+	handler.HandleFunc("/api/task/clean", s.TaskApi.Clean)
 
 	handler.HandleFunc("/api/video/cover/{id}", s.VideoApi.Cover)
+	handler.HandleFunc("/api/video/query/info", s.VideoApi.QueryInfo)
 	handler.HandleFunc("/api/video/query/page", s.VideoApi.QueryPage)
-	handler.HandleFunc("/api/video/query/stats", s.VideoApi.QueryStats)
 
 	// 启动服务
-	slog.Info("[api] server start addr " + s.Addr)
+	slog.Info("api server started", slog.String("addr", s.Addr))
 	return http.ListenAndServe(s.Addr, cors.Handler(handler))
 }
