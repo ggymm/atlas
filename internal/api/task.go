@@ -1,11 +1,15 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/ggymm/gopkg/uuid"
+
 	"atlas/internal/task"
 	"atlas/pkg/data"
+	"atlas/pkg/data/model"
 )
 
 type TaskApi struct {
@@ -18,17 +22,30 @@ func (h *TaskApi) Exec(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 开始时间
+	// 记录事件
 	now := time.Now()
+	data.DB.Create(&model.Event{
+		Id:      uuid.NewUUID(),
+		Content: "task exec start running",
+		Service: "task",
+	})
 
-	// 执行任务
-	err := task.NewScanner().Start()
-	if err != nil {
-		h.error(w, http.StatusInternalServerError, err.Error())
-		return
-	}
+	go func() {
+		// 执行任务
+		err := task.NewScanner().Start()
+		if err != nil {
+			h.error(w, http.StatusInternalServerError, err.Error())
+			return
+		}
 
-	h.ok(w, time.Since(now).String())
+		// 记录事件
+		data.DB.Create(&model.Event{
+			Id:      uuid.NewUUID(),
+			Content: fmt.Sprintf("task exec finish running, cost: %v", time.Since(now)),
+			Service: "task",
+		})
+	}()
+	h.ok(w, nil)
 }
 
 func (h *TaskApi) Clean(w http.ResponseWriter, r *http.Request) {
@@ -37,18 +54,46 @@ func (h *TaskApi) Clean(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 开始时间
+	// 记录事件
 	now := time.Now()
+	data.DB.Create(&model.Event{
+		Id:      uuid.NewUUID(),
+		Content: "task clean start running",
+		Service: "task",
+	})
 
-	// 删除表
-	data.DB.Exec("DROP TABLE IF EXISTS video")
+	go func() {
+		data.DB.Exec("DROP TABLE IF EXISTS video")
+		data.DB.Exec("VACUUM")
+		data.DB.Exec(data.InitSQL)
 
-	// 释放空间
-	data.DB.Exec("VACUUM")
+		// 记录事件
+		data.DB.Create(&model.Event{
+			Id:      uuid.NewUUID(),
+			Content: fmt.Sprintf("task clean finish running, cost: %v", time.Since(now)),
+			Service: "task",
+		})
+	}()
+	h.ok(w, nil)
+}
 
-	// 重新初始化
-	data.DB.Exec(data.InitSQL)
+func (h *TaskApi) Events(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		methodNotAllowed(w)
+		return
+	}
 
-	// 返回结果
-	h.ok(w, time.Since(now).String())
+	query := map[string]any{
+		"service": "task",
+	}
+	order := "created_at desc"
+	events := make([]model.Event, 0)
+
+	// 查询事件
+	err := data.DB.Where(query).Order(order).Limit(20).Find(&events).Error
+	if err != nil {
+		internalServerError(w)
+		return
+	}
+	h.ok(w, events)
 }

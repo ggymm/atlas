@@ -1,6 +1,7 @@
 package api
 
 import (
+	"atlas/view"
 	"log/slog"
 	"net/http"
 
@@ -26,8 +27,11 @@ func NewServer() *Server {
 func (s *Server) Start() error {
 	handler := http.NewServeMux()
 
+	handler.Handle("/", view.NewFileServer())
+
 	handler.HandleFunc("/api/task/exec", s.TaskApi.Exec)
 	handler.HandleFunc("/api/task/clean", s.TaskApi.Clean)
+	handler.HandleFunc("/api/task/events", s.TaskApi.Events)
 
 	handler.HandleFunc("/api/video/cover/{id}", s.VideoApi.Cover)
 	handler.HandleFunc("/api/video/query/info", s.VideoApi.QueryInfo)

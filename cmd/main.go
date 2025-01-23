@@ -43,8 +43,8 @@ func main() {
 	defer w.Destroy()
 
 	w.SetTitle("ATLAS")
-	w.SetSize(1200, 800, webview.HintMin)
 	w.SetSize(1200, 800, webview.HintNone)
+	// w.SetSize(1200, 800, webview.HintMin)
 
 	_ = w.Bind("openPath", func(path string) {
 		path = filepath.FromSlash(path)
@@ -66,6 +66,6 @@ func main() {
 			)
 		}
 	})
-	w.Navigate("http://localhost:5173/")
+	w.Navigate(app.View)
 	w.Run()
 }
