@@ -76,9 +76,9 @@ func (s *Scanner) parse(f os.DirEntry, p string) error {
 	// 基础信息
 	v := new(model.Video)
 	v.Path = rel(s.root, p)
-	v.Star = 0  // 默认未收藏
 	v.Tags = "" // 默认无标签
 	v.Title = f.Name()
+	v.Stars = 0 // 默认未收藏
 	if service.CheckVideo(v) {
 		return nil
 	}

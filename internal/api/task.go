@@ -16,7 +16,7 @@ type TaskApi struct {
 	Api
 }
 
-func (h *TaskApi) Exec(w http.ResponseWriter, r *http.Request) {
+func (h *TaskApi) PostExec(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		methodNotAllowed(w)
 		return
@@ -48,7 +48,7 @@ func (h *TaskApi) Exec(w http.ResponseWriter, r *http.Request) {
 	h.ok(w, true)
 }
 
-func (h *TaskApi) Clean(w http.ResponseWriter, r *http.Request) {
+func (h *TaskApi) PostClean(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		methodNotAllowed(w)
 		return
@@ -77,7 +77,7 @@ func (h *TaskApi) Clean(w http.ResponseWriter, r *http.Request) {
 	h.ok(w, true)
 }
 
-func (h *TaskApi) Events(w http.ResponseWriter, r *http.Request) {
+func (h *TaskApi) QueryEvents(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		methodNotAllowed(w)
 		return

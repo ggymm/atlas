@@ -139,7 +139,7 @@ func (h *VideoApi) QueryPage(w http.ResponseWriter, r *http.Request) {
 		slog.Info("search expr parsed", slog.String("query", query))
 
 		total = total.Where(query, args...)
-		records = records.Where(query, args...)
+		records = records.Where(query, args...).Order("stars desc")
 	}
 
 	// 查询总数
