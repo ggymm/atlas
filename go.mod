@@ -2,13 +2,9 @@ module atlas
 
 go 1.23
 
-replace github.com/ggymm/gopkg => ../gopkg
-
-replace github.com/ggymm/webview => ../webview
-
 require (
-	github.com/ggymm/gopkg v1.2.6
-	github.com/ggymm/webview v1.0.1
+	github.com/ggymm/gopkg v1.2.7
+	github.com/ggymm/webview v1.0.2
 	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/pkg/errors v0.9.1
 	gorm.io/driver/sqlite v1.5.7
@@ -20,3 +16,7 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	golang.org/x/text v0.21.0 // indirect
 )
+
+//replace github.com/ggymm/gopkg => ../gopkg
+
+//replace github.com/ggymm/webview => ../webview

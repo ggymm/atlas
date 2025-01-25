@@ -10,7 +10,6 @@ import (
 	"atlas/internal/api"
 	"atlas/pkg/app"
 	"atlas/pkg/data"
-	"atlas/pkg/log"
 	"atlas/pkg/utils"
 )
 
@@ -20,7 +19,6 @@ var (
 
 func init() {
 	app.Init()
-	log.Init()
 	data.Init()
 
 	vlc = app.Player
@@ -43,19 +41,9 @@ func main() {
 	defer w.Destroy()
 
 	w.SetTitle("ATLAS")
-	w.SetSize(1200, 800, webview.HintNone)
-	// w.SetSize(1200, 800, webview.HintMin)
+	w.SetSize(1440, 960, webview.HintNone)
+	w.SetSize(1200, 800, webview.HintMin)
 
-	_ = w.Bind("openPath", func(path string) {
-		path = filepath.FromSlash(path)
-		err := exec.Command("explorer", path).Start()
-		if err != nil {
-			slog.Error("open path error",
-				slog.Any("error", err),
-				slog.String("path", path),
-			)
-		}
-	})
 	_ = w.Bind("playVideo", func(path string) {
 		path = filepath.Join(app.Root, path)
 		err := exec.Command(vlc, path).Start()

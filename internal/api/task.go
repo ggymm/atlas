@@ -82,9 +82,8 @@ func (h *TaskApi) Events(w http.ResponseWriter, r *http.Request) {
 		methodNotAllowed(w)
 		return
 	}
-
-	query := map[string]any{
-		"service": "task",
+	query := &model.Event{
+		Service: "task",
 	}
 	order := "created_at desc"
 	events := make([]model.Event, 0)

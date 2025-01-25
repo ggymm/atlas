@@ -35,4 +35,5 @@ func rootPath() string {
 
 func Init() {
 	InitConfig()
+	InitLogger()
 }

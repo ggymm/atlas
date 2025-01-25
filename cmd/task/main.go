@@ -7,12 +7,10 @@ import (
 	"atlas/internal/task"
 	"atlas/pkg/app"
 	"atlas/pkg/data"
-	"atlas/pkg/log"
 )
 
 func init() {
 	app.Init()
-	log.Init()
 	data.Init()
 }
 

@@ -5,13 +5,24 @@ import (
 	"net/http"
 )
 
-type Api struct {
-}
-
 type Result struct {
 	Msg     string `json:"msg"`
 	Data    any    `json:"data"`
 	Success bool   `json:"success"`
+}
+
+type OptionResp struct {
+	Value int64  `json:"value"`
+	Label string `json:"label"`
+}
+
+type TreeNodeResp[T any] struct {
+	Key      int64
+	Label    string
+	Children []*T
+}
+
+type Api struct {
 }
 
 func (h *Api) ok(w http.ResponseWriter, data interface{}) {

@@ -1,14 +1,15 @@
 package api
 
 import (
-	"log/slog"
-	"net/http"
-
 	"atlas/pkg/app"
 	"atlas/pkg/data"
 	"atlas/pkg/data/model"
 	"atlas/pkg/data/service"
 	"atlas/pkg/utils"
+	"log/slog"
+	"net/http"
+	"path/filepath"
+	"slices"
 )
 
 type VideoApi struct {
@@ -32,9 +33,10 @@ func (*VideoResp) TableName() string {
 }
 
 type VideoPageReq struct {
-	*service.PageReq
-
+	Page   int    `json:"page"`
+	Size   int    `json:"size"`
 	Tags   string `json:"tags"`
+	Path   string `json:"path"`
 	Order  string `json:"order"`
 	Search string `json:"search"`
 }
@@ -45,8 +47,7 @@ type VideoPageResp struct {
 }
 
 type VideoInfoResp struct {
-	Root string `json:"root"`
-
+	Root          string `json:"root"`
 	Total         int64  `json:"total"`
 	TotalSize     string `json:"totalSize"`
 	TotalDuration string `json:"totalDuration"`
@@ -119,9 +120,9 @@ func (h *VideoApi) QueryPage(w http.ResponseWriter, r *http.Request) {
 		limit  = 20
 		offset = 0
 	)
-	if req.PageReq != nil {
-		limit = req.PageReq.GetSize()
-		offset = req.PageReq.GetOffset()
+	if req.Page != 0 && req.Size != 0 {
+		limit = req.Size
+		offset = (req.Page - 1) * req.Size
 	}
 	total := data.DB.Model(&model.Video{})
 	records := data.DB.Limit(limit).Offset(offset)
@@ -150,4 +151,28 @@ func (h *VideoApi) QueryPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.ok(w, resp)
+}
+
+func (h *VideoApi) QueryPaths(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		methodNotAllowed(w)
+		return
+	}
+
+	ps := make([]string, 0)
+	err := data.DB.Model(&model.Video{}).Select("path").Pluck("path", &ps).Error
+	if err != nil {
+		internalServerError(w)
+		return
+	}
+
+	paths := make([]string, 0)
+	for _, p := range ps {
+		p = filepath.Dir(p)
+		p = filepath.Base(p)
+		if !slices.Contains(paths, p) {
+			paths = append(paths, p)
+		}
+	}
+	h.ok(w, paths)
 }

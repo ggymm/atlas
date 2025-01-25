@@ -1,14 +1,16 @@
-package app
+package app_test
 
 import (
 	"testing"
+
+	"atlas/pkg/app"
 )
 
-func Test_Init(t *testing.T) {
-	Init()
+func Test_InitConfig(t *testing.T) {
+	app.Init()
 
-	t.Log(Name)
-	t.Log(Ffmpeg)
-	t.Log(Ffprobe)
-	t.Log(Datasource)
+	t.Log(app.Name)
+	t.Log(app.Ffmpeg)
+	t.Log(app.Ffprobe)
+	t.Log(app.Datasource)
 }
