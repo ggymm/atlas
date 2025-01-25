@@ -37,6 +37,7 @@ func (s *Server) Start() error {
 	handler.HandleFunc("/api/video/query/info", s.VideoApi.QueryInfo)
 	handler.HandleFunc("/api/video/query/page", s.VideoApi.QueryPage)
 	handler.HandleFunc("/api/video/query/paths", s.VideoApi.QueryPaths)
+	handler.HandleFunc("/api/video/update/stars", s.VideoApi.UpdateStars)
 
 	// 启动服务
 	slog.Info("api server started", slog.String("addr", s.Addr))

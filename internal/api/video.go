@@ -20,9 +20,9 @@ type VideoResp struct {
 	Id        string `gorm:"column:id" json:"id"`
 	Path      string `gorm:"column:path" json:"path"`
 	Size      int64  `gorm:"column:size" json:"size"`
-	Star      int64  `gorm:"column:star" json:"star"`
 	Tags      string `gorm:"column:tags" json:"tags"`
 	Title     string `gorm:"column:title" json:"title"`
+	Stars     int64  `gorm:"column:stars" json:"stars"`
 	Format    string `gorm:"column:format" json:"cover"`
 	Duration  int64  `gorm:"column:duration" json:"duration"`
 	UpdatedAt int64  `gorm:"column:updated_at" json:"updated_at"`
@@ -51,6 +51,11 @@ type VideoInfoResp struct {
 	Total         int64  `json:"total"`
 	TotalSize     string `json:"totalSize"`
 	TotalDuration string `json:"totalDuration"`
+}
+
+type VideoUpdateReq struct {
+	Id    string `json:"id"`
+	Stars int64  `json:"stars"`
 }
 
 func (h *VideoApi) Cover(w http.ResponseWriter, r *http.Request) {
@@ -175,4 +180,33 @@ func (h *VideoApi) QueryPaths(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	h.ok(w, paths)
+}
+
+func (h *VideoApi) UpdateStars(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		methodNotAllowed(w)
+		return
+	}
+	req := new(VideoUpdateReq)
+
+	// 解析请求
+	err := ParseJSON(r, &req)
+	if err != nil {
+		badRequest(w)
+		return
+	}
+
+	// 更新评分
+	video := &model.Video{
+		Id: req.Id,
+	}
+	update := map[string]any{
+		"stars": req.Stars,
+	}
+	err = data.DB.Model(video).Updates(update).Error
+	if err != nil {
+		internalServerError(w)
+		return
+	}
+	h.ok(w, true)
 }

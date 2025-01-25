@@ -45,7 +45,7 @@ func (h *TaskApi) Exec(w http.ResponseWriter, r *http.Request) {
 			Service: "task",
 		})
 	}()
-	h.ok(w, nil)
+	h.ok(w, true)
 }
 
 func (h *TaskApi) Clean(w http.ResponseWriter, r *http.Request) {
@@ -74,7 +74,7 @@ func (h *TaskApi) Clean(w http.ResponseWriter, r *http.Request) {
 			Service: "task",
 		})
 	}()
-	h.ok(w, nil)
+	h.ok(w, true)
 }
 
 func (h *TaskApi) Events(w http.ResponseWriter, r *http.Request) {
