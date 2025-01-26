@@ -6,3 +6,5 @@ static
 
 app.db
 atlas.exe
+atlas-api.exe
+atlas-task.exe

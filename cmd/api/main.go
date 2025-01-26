@@ -12,13 +12,8 @@ func init() {
 }
 
 func main() {
-	// 启动服务
-	go func() {
-		err := api.NewServer().Start()
-		if err != nil {
-			panic(err)
-		}
-	}()
-
-	select {}
+	err := api.NewServer().Start()
+	if err != nil {
+		panic(err)
+	}
 }
