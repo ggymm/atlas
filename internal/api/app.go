@@ -40,6 +40,6 @@ func (s *Server) Start() error {
 	handler.HandleFunc("/api/video/update/stars", s.VideoApi.UpdateStars)
 
 	// 启动服务
-	slog.Info("api server started", slog.String("addr", s.Addr))
+	slog.Info("api server starting", slog.String("addr", s.Addr))
 	return http.ListenAndServe(s.Addr, cors.Handler(handler))
 }

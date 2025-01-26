@@ -35,7 +35,6 @@ func (*VideoResp) TableName() string {
 type VideoPageReq struct {
 	Page   int    `json:"page"`
 	Size   int    `json:"size"`
-	Tags   string `json:"tags"`
 	Path   string `json:"path"`
 	Order  string `json:"order"`
 	Search string `json:"search"`
@@ -135,9 +134,14 @@ func (h *VideoApi) QueryPage(w http.ResponseWriter, r *http.Request) {
 	if len(req.Search) != 0 {
 		args := make([]any, 0)
 		query := buildQuery(parseExpr(req.Search), &args)
-
 		slog.Info("search expr parsed", slog.String("query", query))
 
+		if len(req.Path) != 0 {
+			args = append(args, "%"+req.Path+"%")
+			query = query + " AND path like ?"
+		}
+
+		// 查询条件
 		total = total.Where(query, args...)
 		records = records.Where(query, args...).Order("stars desc")
 	}
