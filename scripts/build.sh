@@ -7,11 +7,11 @@ export GOARCH=amd64
 #go clean -cache
 
 cd api || exit
-go build -ldflags="-s -w" -o ../../atlas-api.exe
+go build -ldflags="-s -w" -o ../../dist/atlas-api.exe
 cd ..
 
 cd task || exit
-go build -ldflags="-s -w" -o ../../atlas-task.exe
+go build -ldflags="-s -w" -o ../../dist/atlas-task.exe
 cd ..
 
-go build -ldflags="-s -w -H=windowsgui" -o ../atlas.exe
+go build -ldflags="-s -w -H=windowsgui" -o ../dist/atlas.exe
