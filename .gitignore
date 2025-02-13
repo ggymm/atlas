@@ -4,5 +4,7 @@ dist
 temp
 static
 
-
 app.db
+
+
+webview.exe.WebView2

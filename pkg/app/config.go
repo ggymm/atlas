@@ -21,6 +21,7 @@ var (
 var (
 	Ffmpeg  string
 	Ffprobe string
+	Webview string
 )
 
 var (
@@ -55,6 +56,7 @@ type Config struct {
 		Root    string `ini:"root"`
 		Ffmpeg  string `ini:"ffmpeg"`
 		Ffprobe string `ini:"ffprobe"`
+		Webview string `ini:"webview"`
 	} `ini:"bin"`
 
 	// Database 数据库配置
@@ -85,6 +87,7 @@ func InitConfig() {
 	base := filepath.Join(root, cfg.Bin.Root)
 	Ffmpeg = filepath.Join(base, cfg.Bin.Ffmpeg)
 	Ffprobe = filepath.Join(base, cfg.Bin.Ffprobe)
+	Webview = filepath.Join(base, cfg.Bin.Webview)
 
 	Datasource = "file:" + filepath.Join(root, cfg.Database.Source)
 }
