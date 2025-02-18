@@ -1,25 +1,16 @@
 package main
 
 import (
+	"os/exec"
+
 	"atlas/internal/api"
-	"atlas/internal/view"
 	"atlas/pkg/app"
 	"atlas/pkg/data"
-	"atlas/pkg/utils"
-)
-
-var (
-	vlc string
 )
 
 func init() {
 	app.Init()
 	data.Init()
-
-	vlc = app.Player
-	if len(vlc) == 0 {
-		vlc = utils.LookupVLC()
-	}
 }
 
 func main() {
@@ -31,7 +22,8 @@ func main() {
 		}
 	}()
 
-	err := view.NewWebview().Start()
+	// 启动浏览器
+	err := exec.Command(app.Webview, app.View).Run()
 	if err != nil {
 		panic(err)
 	}

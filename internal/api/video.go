@@ -8,12 +8,14 @@ import (
 	"atlas/pkg/utils"
 	"log/slog"
 	"net/http"
+	"os/exec"
 	"path/filepath"
 	"slices"
 )
 
 type VideoApi struct {
 	Api
+	vlc string
 }
 
 type VideoResp struct {
@@ -55,6 +57,42 @@ type VideoInfoResp struct {
 type VideoUpdateReq struct {
 	Id    string `json:"id"`
 	Stars int64  `json:"stars"`
+}
+
+func (h *VideoApi) Play(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		methodNotAllowed(w)
+		return
+	}
+
+	v := new(model.Video)
+	v.Id = r.PathValue("id")
+	err := service.GetVideo(v)
+	if err != nil {
+		internalServerError(w)
+		return
+	}
+
+	if len(h.vlc) == 0 {
+		vlc := app.Player
+		if len(vlc) == 0 {
+			vlc = utils.LookupVLC()
+		}
+		h.vlc = vlc
+	}
+
+	// 播放视频
+	err = exec.Command(h.vlc, filepath.Join(app.Root, v.Path)).Start()
+	if err != nil {
+		slog.Error("play video error",
+			slog.Any("error", err),
+			slog.String("id", v.Id),
+			slog.String("path", v.Path),
+		)
+		internalServerError(w)
+		return
+	}
+	h.ok(w, true)
 }
 
 func (h *VideoApi) Cover(w http.ResponseWriter, r *http.Request) {

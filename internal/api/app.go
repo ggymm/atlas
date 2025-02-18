@@ -33,6 +33,7 @@ func (s *Server) Start() error {
 	handler.HandleFunc("/api/task/post/clean", s.TaskApi.PostClean)
 	handler.HandleFunc("/api/task/query/events", s.TaskApi.QueryEvents)
 
+	handler.HandleFunc("/api/video/play/{id}", s.VideoApi.Play)
 	handler.HandleFunc("/api/video/cover/{id}", s.VideoApi.Cover)
 	handler.HandleFunc("/api/video/query/info", s.VideoApi.QueryInfo)
 	handler.HandleFunc("/api/video/query/page", s.VideoApi.QueryPage)
